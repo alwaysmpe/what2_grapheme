@@ -1,0 +1,283 @@
+[project]
+name = "what2_grapheme"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "Marc Edwards", email = "marc@mlwhat.com"},
+]
+dependencies = [
+    "numpy>=2.1.2",
+    "pandas>=2.2.3",
+    "what2-regex>=0.1.0",
+]
+requires-python = ">=3.13"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest>=8.3.3",
+    "pytest-order>=1.3.0",
+    "pytest-gitignore>=1.3",
+    "setuptools>=75.2.0",
+    "toml>=0.10.2",
+    "rich>=13.9.3",
+    "what2>=0.3.3",
+    "graphemeu>=0.7.0",
+    "what2-time>=0.3.1",
+    "pandas-stubs>=2.2.3.241009",
+    "pyuegc>=16.0.0",
+    # Code analysis tools - use latest where possible. Fix what breaks.
+    "deptry",
+    "basedpyright",
+    "ruff",
+    "pylama",
+    "darglint2",
+]
+
+
+[tool.pytest.ini_options]
+
+python_files = ["test_*.py", "bm_*.py"]
+python_functions = ["test_*", "bm_*"]
+
+
+addopts = """\
+--doctest-modules \
+--doctest-ignore-import-errors \
+--ignore=tasks.py \
+--ignore=test_old \
+--tb=short \
+"""
+
+[tool.pyright]
+# typeshedPath = "/mnt/c/sandbox/typeshed/"
+pythonVersion = "3.13"
+useLibraryCodeForTypes = true
+reportMissingTypeStubs = false
+reportImplicitOverride = true
+deprecateTypingAliases = true
+reportNoOverloadImplementation = false
+reportUnusedImport = false
+# reportOverlappingOverload = false
+# reportUninitializedInstanceVariable = true
+typeCheckingMode  = "strict"
+exclude = [
+    "**/.ipynb_checkpoints/*",
+    "**/.venv/",
+    "./tasks.py",
+    "./tests/conftest.py",
+    "./test_old",
+    "./bm",
+]
+ignore =  [
+    "**/.ipynb_checkpoints/*",
+    "**/.venv/",
+    "./tasks.py",
+]
+
+[tool.ruff]
+
+line-length = 160
+indent-width = 4
+target-version = "py312"
+exclude = [
+    "**/.ipynb_checkpoints/*",
+    "**/.venv/",
+    "tasks.py",
+    "exp.py",
+    "bm/*",
+    "**/conftest.py",
+    "test_old/*",
+]
+
+[tool.ruff.format]
+
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.ruff.lint]
+
+preview = true
+select = [
+    "ALL",
+    # aren't selected by all due to conflicts
+    "D213",
+    "D215",
+    "D404",
+    "D405",
+    "D406",
+    "D407",
+    "D408",
+    "D408",
+    "D409",
+    "D410",
+    "D411",
+    "D417",
+]
+
+ignore = [
+    # to enable
+    "D",
+    # "D104", # docstring in __init__ file - undecided.
+    # "PYI043",
+    "TCH001", # Use type ckecking block - meh
+    "TCH002", # Use type ckecking block - meh
+    "TCH003", # Use type ckecking block - meh
+    # don't enable
+    # "UP040", # https://github.com/python/cpython/issues/126085
+    "DOC", # not compatible with rst
+    "FIX002", # Line contains TODO.
+    "TD002", # Missing author in todo - it's me. Hi. I'm the problem. It's me.
+    "TD003", # Missing issue link in todo - I'll do it eventually. Or I won't.
+    # "FBT001", # bool function arguments, wouldn't make code better
+    # "FBT002", # bool function arguments, wouldn't make code better
+    # "FBT003", # bool function arguments, wouldn't make code better
+    "PLR1714", # multiple comparisons - in simple case fixing causes type errors or makes code harder to read/more complicated.
+    "CPY001", # Expects copywright notice. I'm lazy and it's not that important.
+    # "PLW0603", # use of global cache variable
+    "S101", # use of asserts. useful for providing implicit type information, etc.
+    "E261", # Expects 2 spaces before a comment. I use 1.
+    "SIM108", # Replace if/else with ternary. Not clearer.
+    # "PYI025", # import Set as AbstractSet - No. Learn to read.
+    # "RET505", # Unncecessary elif after return - sometimes it's clearer.
+    # "PLR6104", # use += instead of +. Sometimes it's clearer.
+    "PLC0414", # import alias does not rename original - but it adds it to the public namespace...
+    # "SIM110", # replace for with any - sometimes it's celarer.
+    # "N818", # Exception should be named with an error - go watch a Kevlin Henney talk.
+    # "ARG002", # Unused method argument - subclass.
+    # "SLF001", # use of private method in sister class - stupid.
+    # "D200", # One line docstring on one line - meh...
+    # "C901",
+    # "PIE796",
+    # "PLR0912",
+    # "D105",
+    # "D107",
+    # "D203",
+    # "D205",
+    # "D212",
+    # "TRY002",
+    # "TRY003",
+    # "FIX001",
+    # "FIX003",
+    # "FIX004",
+    # "RET503",
+    # "RET504",
+    # "PD901",
+    # "PLW1641", # implement eq without hash - what if it's mutable?
+]
+
+unfixable = [
+    "ERA001",
+    "PLR1714",
+]
+
+[tool.ruff.lint.per-file-ignores]
+
+"tests/*" = [
+    "D",
+    "FBT001",
+    "FURB118",
+    "ANN",
+    # "PLR2004",
+    "S101", # use of asserts
+    "PLC2701", # private imports - _pytest imports are useful...
+    "RUF001", # string contains ambiguous characters (AKA less common UTF characters which is the whole point of this package.
+
+    "ERA001", # commented out code:
+    # lots of very short tests would bomb performance if they
+    # all had prints and pytest doesn't have a great
+    # "log on fail" option...
+
+    "TRY002", # Use custom exceptions. Pointless for tests.
+    "S404", # Use of subprocess. It's fine.
+    "S603", # Use of subprocess. It's fine.
+    "T201", # Use of print. It's fine.
+]
+
+"src/what2_grapheme/simple_sm/state.py" = [
+    "N802", # Function name should be lower case - contains rule name in rule implementation.    "SIM110", # use return any instead of loop. sometimes loop is clearer.
+#     "PLR0911", # too many returns
+#     "PLR0912", # too many branches
+#     "C901", # too complex
+]
+# "src/what2_grapheme/simple_sm/api.py" = [
+#     "SIM110", # use return any instead of loop. sometimes loop is clearer.
+# ]
+"src/what2_grapheme/fast_sm/state.py" = [
+    "N802", # Function name should be lower case - contains rule name in rule implementation.
+    "PLR2004", # Magic values make code go brrr
+#     "SIM110", # use return any instead of loop. sometimes loop is clearer.
+#     "PLR0911", # too many returns
+#     "PLR0912", # too many branches
+#     "C901", # too complex
+]
+# "src/what2_grapheme/fast_sm/api.py" = [
+#     "SIM110", # use return any instead of loop. sometimes loop is clearer.
+# ]
+"src/what2_grapheme/fast_sm/break_gen.py" = [
+    "SIM103", # replace if ret/ret with ret condition. Sometimes condition is clearer.
+    "PLR2004", # Magic values make code go brrr
+#     "PLR0911", # too many returns
+#     "PLR0912", # too many branches
+#     "C901", # too complex
+]
+
+# "src/what2_grapheme/grapheme_property/lookup.py" = [
+#     "ERA001",
+#     "PLR0914",
+#     "PLR0915",
+# ]
+
+# "src/what2_grapheme/grapheme_property/type.py" = [
+#     "PIE796", # "Enum contains duplicates" false positive
+# ]
+
+[tool.ruff.lint.flake8-quotes]
+
+avoid-escape = false
+inline-quotes = "double"
+multiline-quotes = "double"
+
+[tool.ruff.lint.flake8-tidy-imports]
+
+ban-relative-imports = "all"
+
+[tool.ruff.lint.isort]
+
+force-sort-within-sections = true
+forced-separate = ["what2*", "tests", "pytest", "_pytest"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 14
+
+
+[tool.ruff.lint.pylint]
+max-branches = 14
+max-returns = 14
+max-locals = 20
+
+[tool.ruff.lint.pydocstyle]
+
+convention = "pep257"
+
+[tool.pylama]
+
+ignore = "E261,C901"
+
+skip = """\
+*.ipynb_checkpoints/*,\
+"""
+
+max_line_length = 160
+
+format = "pylint"
