@@ -18,7 +18,7 @@ def cache[**P, R](fn: Callable[P, R]) -> Callable[P, R]:
     takes hashables. I think that's a better
     trade off.
     """
-    return cast(Callable[P, R], _wraps(fn)(_cache(fn)))
+    return cast("Callable[P, R]", _wraps(fn)(_cache(fn)))
 
 
 @overload
@@ -55,8 +55,8 @@ def lru_cache[**P, R](
     """
     if isinstance(maxsize, int | NoneType):
         def inner(fn: Callable[P, R]) -> Callable[P, R]:
-            return cast(Callable[P, R], _wraps(fn)(_lru_cache(maxsize, typed)(fn)))
+            return cast("Callable[P, R]", _wraps(fn)(_lru_cache(maxsize, typed)(fn)))
 
         return inner
 
-    return cast(Callable[P, R], _wraps(maxsize)(_lru_cache(typed=typed)(maxsize)))
+    return cast("Callable[P, R]", _wraps(maxsize)(_lru_cache(typed=typed)(maxsize)))

@@ -33,7 +33,7 @@ class StrBreakGen(Generator[bool, str]):
 
     @override
     def send(self, value: str) -> bool:
-        break_kind = cast(int, self.ch_props.char_to_cat(value))
+        break_kind = cast("int", self.ch_props.char_to_cat(value))
         return self.state.send(break_kind)
 
     @override

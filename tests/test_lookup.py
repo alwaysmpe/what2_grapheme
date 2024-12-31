@@ -14,7 +14,7 @@ def test_match_grapheme():
     props = default_properties()
     failed = False
     for i in range(1114111):
-        g_gr: GraphemePropertyGroup = cast(GraphemePropertyGroup, get_group_ord(i))
+        g_gr: GraphemePropertyGroup = cast("GraphemePropertyGroup", get_group_ord(i))
 
         break_code = props.code_to_cat(i)
         break_enum = Break(break_code)

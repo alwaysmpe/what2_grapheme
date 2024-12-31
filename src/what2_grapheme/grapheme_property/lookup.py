@@ -176,7 +176,7 @@ class GraphemeBreak:
 
         dtype_series: dict[str, pd.Series[pd.CategoricalDtype]] = {
             cat: pd.Series(
-                [cat],
+                [cat], # type: ignore[reportUnknownArgumentType]
                 dtype=break_cat_dtype,
             )
 
@@ -185,7 +185,7 @@ class GraphemeBreak:
 
         results: list[pd.Series[pd.CategoricalDtype]] = []
 
-        start: int = cast(int, data["code_start"][0])
+        start: int = cast("int", data["code_start"][0])
 
         if start != 0:
             other_s: pd.Series[pd.CategoricalDtype] = dtype_series[Break.Other.name].repeat(start)
@@ -194,7 +194,7 @@ class GraphemeBreak:
         prev_row: PrevT
         next_row: NextT
 
-        pair_row_iter: Iterator[tuple[PrevT, NextT]] = cast(PairIter, pairwise(chain(data.itertuples(index=False, name=None), (None,))))
+        pair_row_iter: Iterator[tuple[PrevT, NextT]] = cast("PairIter", pairwise(chain(data.itertuples(index=False, name=None), (None,))))
 
         for prev_row, next_row in pair_row_iter:
             code_start, code_end, break_class = prev_row
@@ -224,7 +224,7 @@ class GraphemeBreak:
         # from collections import defaultdict # noqa: ERA001
         # code_desc = defaultdict(set) # noqa: ERA001
 
-        row_iter: Iterator[PrevT] = cast(Iterator[PrevT], incb_data.itertuples(index=False, name=None))
+        row_iter: Iterator[PrevT] = cast("Iterator[PrevT]", incb_data.itertuples(index=False, name=None))
         for code_start, code_end, break_class in row_iter:
             # for code in cat_data[code_start: code_end + 1]:
             #     code_desc[break_class].add(code) # noqa: ERA001
@@ -255,7 +255,7 @@ class GraphemeBreak:
             for val in Break
         }
 
-        np_data: npt.NDArray[np.uint8] = cast(npt.NDArray[np.uint8], cat_data.map(break_map).to_numpy(dtype=np.uint8)) # type: ignore reportUnknownMemberType
+        np_data: npt.NDArray[np.uint8] = cast("npt.NDArray[np.uint8]", cat_data.map(break_map).to_numpy(dtype=np.uint8)) # type: ignore reportUnknownMemberType
         return np_data
 
     @classmethod

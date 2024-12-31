@@ -1,10 +1,11 @@
+from collections.abc import Callable
 import re
 
 import pandas as pd
 from what2 import dbg
 
-from what2_grapheme.fast_re import api as egf_api
-from what2_grapheme.fast_sm import api as fast_api
+from what2_grapheme.fast_re import api as fast_api
+from what2_grapheme.fast_sm import api as fast_sm_api
 from what2_grapheme.grapheme_data.load import break_test
 from what2_grapheme.grapheme_property.cache import default_properties
 from what2_grapheme.grapheme_property.parse import parse_utf_delimited
@@ -40,7 +41,7 @@ def reference_case_spec(reference_idx: int) -> str:
     return break_test_data[reference_idx]
 
 
-break_pat: re.Pattern[str] = re.compile(" [×÷] ")
+break_pat: re.Pattern[str] = re.compile(r" [×÷] ")
 
 
 @pytest.fixture
@@ -108,27 +109,33 @@ def debug_fail_enum_kind(request: pytest.FixtureRequest, reference_case_spec: st
 
 
 def test_grapheme_length(case_str: str, case_str_sizes: list[int]):
-    egf_length = egf_api.length(case_str)
-    assert egf_length == len(case_str_sizes)
-    fast_length = fast_api.length(case_str)
-    assert fast_length == len(case_str_sizes)
-    simple_length = simple_api.length(case_str)
-    assert simple_length == len(case_str_sizes)
-    # assert 0
+    impls: tuple[Callable[[str], int], ...] = (
+        fast_api.length,
+        fast_sm_api.length,
+        simple_api.length,
+    )
+    for impl in impls:
+        assert impl(case_str) == len(case_str_sizes)
 
 
 def test_grapheme_sizes(case_str: str, case_str_sizes: list[int]):
-    fast_sizes = fast_api.grapheme_sizes(case_str)
-    assert fast_sizes == case_str_sizes
-    simple_sizes = simple_api.grapheme_sizes(case_str)
-    assert simple_sizes == case_str_sizes
+    impls: tuple[Callable[[str], list[int]], ...] = (
+        fast_api.grapheme_sizes,
+        fast_sm_api.grapheme_sizes,
+        simple_api.grapheme_sizes,
+    )
+    for impl in impls:
+        assert impl(case_str) == case_str_sizes
 
 
 def test_grapheme_chunks(case_str: str, case_str_chunks: list[int]):
-    fast_chunks = fast_api.graphemes(case_str)
-    assert fast_chunks == case_str_chunks
-    simple_chunks = simple_api.graphemes(case_str)
-    assert simple_chunks == case_str_chunks
+    impls: tuple[Callable[[str], list[str]], ...] = (
+        fast_api.graphemes,
+        fast_sm_api.graphemes,
+        simple_api.graphemes,
+    )
+    for impl in impls:
+        assert impl(case_str) == case_str_chunks
 
 
 @pytest.fixture

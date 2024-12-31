@@ -1,6 +1,6 @@
 [project]
 name = "what2_grapheme"
-version = "0.1.0"
+version = "0.2.0"
 description = "Default template for PDM package"
 authors = [
     {name = "Marc Edwards", email = "marc@mlwhat.com"},
@@ -130,9 +130,9 @@ ignore = [
     "D",
     # "D104", # docstring in __init__ file - undecided.
     # "PYI043",
-    "TCH001", # Use type ckecking block - meh
-    "TCH002", # Use type ckecking block - meh
-    "TCH003", # Use type ckecking block - meh
+    "TC001", # Use type ckecking block - meh
+    "TC002", # Use type ckecking block - meh
+    "TC003", # Use type ckecking block - meh
     # don't enable
     # "UP040", # https://github.com/python/cpython/issues/126085
     "DOC", # not compatible with rst
