@@ -27,7 +27,7 @@ def iter_grapheme_sizes(data: str, properties: GraphemeBreak | None = None) -> I
     yield current_size
 
 
-def is_safe(data: str, properties: GraphemeBreak | None = None, *, skip_crlf: bool = True) -> bool:
+def is_safe(data: str, properties: GraphemeBreak | None = None, *, skip_crlf: bool = False) -> bool:
     if properties is None:
         properties = default_properties()
 

@@ -1,9 +1,17 @@
+from collections.abc import Callable
+from itertools import product
+
 from what2 import dbg
 
-from what2_grapheme.fast_re import api as egf_api
-from what2_grapheme.fast_sm import api
+from what2_grapheme.fast_re import api as fast_api
+from what2_grapheme.fast_sm import api as fast_sm_api
 
 import pytest
+
+impls: tuple[Callable[[str, int | None, int | None], str], ...] = (
+    fast_api.strslice,
+    fast_sm_api.strslice,
+)
 
 
 @pytest.fixture(params=[
@@ -42,138 +50,94 @@ def slice_stop(slice_pair: tuple[int | None, int | None]) -> int | None:
     return slice_pair[1]
 
 
-def test_short_gslice_sm(slice_start: int | None, slice_stop: int | None):
+def test_short_slice(slice_start: int | None, slice_stop: int | None):
 
-    eg_strs = [
-        "a",
-        "a" * 2,
-        "a" * 3,
-        "a" * 5,
-        "a" * 9,
-        "a" * 10,
-        "a" * 11,
-        "a" * 12,
-    ]
     zwj = "\u200D"
-    for eg_str in eg_strs:
-        print("start " + "-" * 40)
-        eg_zwj_str = zwj.join(eg_str) + zwj
+
+    eg_strs = (
+        (eg_str, f"{zwj.join(eg_str)}{zwj}")
+        for eg_str in (
+            "a",
+            "a" * 2,
+            "a" * 3,
+            "a" * 5,
+            "a" * 9,
+            "a" * 10,
+            "a" * 11,
+            "a" * 12,
+        )
+    )
+
+    for (eg_str, eg_zwj_str), impl in product(eg_strs, impls):
         start = slice_start
         stop = slice_stop
-        bstr = eg_str[start: stop]
-        gstr = "<test not run>"
+
+        expected = eg_str[start: stop]
+        expected_zwj = zwj.join(expected) + zwj * bool(expected)
+
+        result = "<no value returned>"
+        result_zwj = "<no value returned>"
+
         try:
-            gstr = api.strslice(eg_str, start, stop)
-            assert gstr == bstr
-        except Exception:
+            result = impl(eg_str, start, stop)
+            assert result == expected
+        except:
             dbg(eg_str)
             dbg(len(eg_str))
             dbg(start)
             dbg(stop)
-            dbg(len(bstr))
-            dbg(len(gstr))
+            dbg(expected)
+            dbg(len(expected))
+            dbg(result)
+            dbg(len(result))
             raise
 
-        print("start " + "-" * 40)
-        b_zwj_str = zwj.join(bstr) + zwj * bool(bstr)
-        bstr = ""
-        g_zwj_str = "<test not run>"
-
         try:
-            g_zwj_str = api.strslice(eg_zwj_str, start, stop)
-            assert g_zwj_str == b_zwj_str
-        except Exception:
+            result_zwj = impl(eg_zwj_str, start, stop)
+            assert result_zwj == expected_zwj
+        except:
+            dbg(eg_zwj_str)
             dbg(len(eg_zwj_str))
             dbg(start)
             dbg(stop)
-            dbg(len(g_zwj_str))
-            dbg(len(b_zwj_str))
+            dbg(expected_zwj)
+            dbg(len(expected_zwj))
+            dbg(result_zwj)
+            dbg(len(result_zwj))
             raise
 
 
-def test_short_gslice_re(slice_start: int | None, slice_stop: int | None):
-
-    eg_strs = [
-        "a",
-        "a" * 2,
-        "a" * 3,
-        "a" * 5,
-        "a" * 9,
-        "a" * 10,
-        "a" * 11,
-        "a" * 12,
-    ]
-    zwj = "\u200D"
-    for eg_str in eg_strs:
-        print("start " + "-" * 40)
-        eg_zwj_str = zwj.join(eg_str) + zwj
-        start = slice_start
-        stop = slice_stop
-        bstr = eg_str[start: stop]
-        estr = "<test not run>"
-        try:
-            estr = egf_api.strslice(eg_str, start, stop)
-            assert estr == bstr
-        except Exception:
-            dbg(len(eg_str))
-            dbg(start)
-            dbg(stop)
-            dbg(len(bstr))
-            dbg(len(estr))
-            raise
-
-        print("start " + "-" * 40)
-        b_zwj_str = zwj.join(bstr) + zwj * bool(bstr)
-        # bstr = ""
-        e_zwj_str = "<test not run>"
-
-        try:
-            e_zwj_str = egf_api.strslice(eg_zwj_str, start, stop)
-            assert e_zwj_str == b_zwj_str
-        except Exception:
-            dbg(len(eg_zwj_str))
-            dbg(start)
-            dbg(stop)
-            dbg(len(e_zwj_str))
-            dbg(len(b_zwj_str))
-            raise
-
-
-def test_gslice(slice_start: int | None, slice_stop: int | None):
-
+def test_slice(slice_start: int | None, slice_stop: int | None):
     eg_str = "abcdefghi" * 10
     zwj = "\u200D"
     eg_zwj_str = zwj.join(eg_str) + zwj
     start = slice_start
     stop = slice_stop
+    expected = eg_str[start: stop]
+    expected_zwj = zwj.join(expected) + zwj * bool(expected)
+    result = "<no value returned>"
+    result_zwj = "<no value returned>"
 
-    gstr = api.strslice(eg_str, start, stop)
-    estr = egf_api.strslice(eg_str, start, stop)
-    bstr = eg_str[start: stop]
-    try:
-        assert gstr == bstr
-        assert estr == bstr
-    except Exception:
-        dbg(len(eg_str))
-        dbg(start)
-        dbg(stop)
-        dbg(len(gstr))
-        dbg(len(estr))
-        dbg(len(bstr))
-        raise
-
-    g_zwj_str = api.strslice(eg_zwj_str, start, stop)
-    e_zwj_str = egf_api.strslice(eg_zwj_str, start, stop)
-    b_zwj_str = zwj.join(bstr) + zwj * bool(bstr)
-
-    try:
-        assert g_zwj_str == b_zwj_str
-        assert e_zwj_str == b_zwj_str
-    except Exception:
-        dbg(len(eg_zwj_str))
-        dbg(start)
-        dbg(stop)
-        dbg(len(g_zwj_str))
-        dbg(len(e_zwj_str))
-        dbg(len(b_zwj_str))
-        raise
+    for impl in impls:
+        try:
+            result = impl(eg_str, start, stop)
+            assert expected == result
+        except Exception:
+            dbg(eg_str)
+            dbg(len(eg_str))
+            dbg(start)
+            dbg(stop)
+            dbg(result)
+            dbg(len(result))
+            raise
+        try:
+            result_zwj = impl(eg_zwj_str, start, stop)
+            assert result_zwj == expected_zwj
+        except Exception:
+            dbg(eg_zwj_str)
+            dbg(len(eg_zwj_str))
+            dbg(start)
+            dbg(stop)
+            dbg(result_zwj)
+            dbg(len(result_zwj))
+            raise

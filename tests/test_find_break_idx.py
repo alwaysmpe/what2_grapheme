@@ -1,3 +1,4 @@
+from what2_grapheme.fast_re import internal as re_internal
 from what2_grapheme.fast_sm.break_gen import is_definite_break
 from what2_grapheme.fast_sm.state import StateFn, StateMachine
 from what2_grapheme.grapheme_property.type import Break
@@ -41,3 +42,12 @@ def test_breakable(prev_break: Break, next_break: Break):
     is_inferred_break = is_definite_break(prev_break, next_break)
 
     assert is_inferred_break is can_break
+
+    re_ir_str = f"{getattr(re_internal, prev_break.name)}{getattr(re_internal, next_break.name)}"
+
+    re_pat = re_internal.definite_break_re()
+
+    re_match = re_pat.match(re_ir_str)
+
+    if can_break:
+        assert re_match is not None

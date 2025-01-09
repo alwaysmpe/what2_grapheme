@@ -6,7 +6,7 @@ from what2_grapheme.grapheme_property.cache import default_properties
 def random_utf_string(length: int, rng: Generator | None = None) -> str:
     if rng is None:
         rng = mk_rng()
-    codes: list[str] = default_properties().all_other_list
+    codes: tuple[str, ...] = default_properties().all_other_list
 
     codes_used = max(1, int(length ** 0.5))
 

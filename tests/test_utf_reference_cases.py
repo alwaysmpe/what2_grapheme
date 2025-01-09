@@ -6,13 +6,13 @@ from what2 import dbg
 
 from what2_grapheme.fast_re import api as fast_api
 from what2_grapheme.fast_sm import api as fast_sm_api
-from what2_grapheme.grapheme_data.load import break_test
 from what2_grapheme.grapheme_property.cache import default_properties
 from what2_grapheme.grapheme_property.parse import parse_utf_delimited
 from what2_grapheme.simple_sm import api as simple_api
 from what2_grapheme.util.caching import cache
 
 from tests.conftest import did_fail
+from tests.data import break_test
 
 import pytest
 
@@ -144,5 +144,6 @@ def ref_has_graphemes(case_str_sizes: list[int]) -> bool:
 
 
 def test_is_safe(case_str: str, ref_has_graphemes: bool):
+    assert fast_sm_api.is_safe(case_str) == fast_api.is_safe(case_str)
     has_graphemes = not fast_api.is_safe(case_str, skip_crlf=False)
     assert has_graphemes == ref_has_graphemes

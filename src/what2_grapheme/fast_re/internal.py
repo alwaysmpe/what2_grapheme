@@ -150,6 +150,32 @@ def fast_safe_re_ascii(properties: GraphemeBreak, *, skip_crlf: bool) -> re.Patt
 
 
 @cache
+def definite_break_re() -> re.Pattern[str]:
+    """
+    Get a regex to match a pair of grapheme properties that definitely form a grapheme break.
+    """
+
+    return w2.seq(
+        w2.ng(
+            w2.or_seq(
+                w2.seq(Prepend, w2.ch_xset(CR, LF, Control)),
+                w2.seq(w2.ch_xset(CR, LF, Control), w2.ch_set(Extend, SpacingMark, ZWJ, InCB_Linker)),
+                w2.seq(L, w2.ch_set(L, V, LV, LVT)),
+                w2.seq(w2.ch_set(V, LV), w2.ch_set(V, T)),
+                w2.seq(w2.ch_set(T, LVT), T),
+                w2.seq(Regional_Indicator, Regional_Indicator),
+                w2.seq(InCB_Consonant, w2.ch_set(Extend, ZWJ, InCB_Linker)),
+                w2.seq(w2.ch_set(Extend, ZWJ, InCB_Linker), InCB_Consonant),
+                w2.seq(w2.ch_set(Extend, ZWJ), Extended_Pictographic),
+                w2.seq(CR, LF),
+                w2.seq(".", w2.line_end),
+            ),
+        ),
+        ".",
+    ).c()
+
+
+@cache
 def pos_re(idx: int) -> re.Pattern[str]:
     """
     Get a regex to match the grapheme at the given position.
