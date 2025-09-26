@@ -64,7 +64,8 @@ implementation. The last is the one exposed in
 
 The first usage is slow due to raw data being parsed
 and caches being populated, but after that it's
-faster than any alternative I've found.
+faster than any alternative I've found (however [ugrapheme](https://github.com/Z4JC/ugrapheme)
+might be faster)
 
 To run benchmarks, checkout and install dev
 dependencies using `pdm` then run `python -m bm`.
