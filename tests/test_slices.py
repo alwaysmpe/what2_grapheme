@@ -1,12 +1,13 @@
 from collections.abc import Callable
 from itertools import product
 
-from what2 import dbg
+from what2.debug import dbg
 
 from what2_grapheme.fast_re import api as fast_api
 from what2_grapheme.fast_sm import api as fast_sm_api
 
 import pytest
+import ugrapheme
 
 impls: tuple[Callable[[str, int | None, int | None], str], ...] = (
     fast_api.strslice,

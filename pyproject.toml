@@ -9,8 +9,11 @@ dependencies = [
     "numpy>=2.1.2",
     "pandas>=2.2.3",
     "what2-regex>=0.1.0",
+    "regex>=2025.9.18",
+    "ugrapheme>=0.8",
 ]
 requires-python = ">=3.13"
+# includes = ["src/what2"]
 readme = "README.md"
 license = {text = "MIT"}
 
@@ -20,6 +23,7 @@ build-backend = "pdm.backend"
 
 [tool.pdm]
 distribution = true
+# includes = ["src/what2"]
 
 [tool.pdm.dev-dependencies]
 dev = [

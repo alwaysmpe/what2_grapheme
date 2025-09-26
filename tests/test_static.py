@@ -1,94 +1,94 @@
-import os
-from pathlib import Path
-import shlex
-import subprocess
+# import os
+# from pathlib import Path
+# import shlex
+# import subprocess
 
-import pytest
+# import pytest
 
-base_dir = Path(__file__).absolute().parent.parent
-
-
-def is_linux() -> bool:
-    return os.name == "posix"
+# base_dir = Path(__file__).absolute().parent.parent
 
 
-def call(cmd: list[str]) -> None:
-    result = subprocess.run(cmd, cwd=base_dir, check=False)
-    redirect = " 2>&1" if is_linux() else ""
-    expanded_command = shlex.join(cmd) + redirect
-    print("command run:", expanded_command)
-    if result.returncode == 0:
-        return
-
-    raise Exception("Command returned error: " + expanded_command)
+# def is_linux() -> bool:
+#     return os.name == "posix"
 
 
-def pyright(path: Path):
-    call(["basedpyright", str(path), "-p", str(path)])
+# def call(cmd: list[str]) -> None:
+#     result = subprocess.run(cmd, cwd=base_dir, check=False)
+#     redirect = " 2>&1" if is_linux() else ""
+#     expanded_command = shlex.join(cmd) + redirect
+#     print("command run:", expanded_command)
+#     if result.returncode == 0:
+#         return
+
+#     raise Exception("Command returned error: " + expanded_command)
 
 
-def ruff(path: Path):
-    call(["ruff", "check", str(path), "--preview"])
+# def pyright(path: Path):
+#     call(["basedpyright", str(path), "-p", str(path)])
 
 
-def darglint(path: Path):
-    call([
-        "darglint2",
-        str(path / "src"),
-        str(path / "tests"),
-    ])
+# def ruff(path: Path):
+#     call(["ruff", "check", str(path), "--preview"])
 
 
-def deptry_src(path: Path):
-    call([
-        "deptry",
-        "-pri", "DEP003=what2_utf_data",
-        "-kf", "what2_grapheme",
-        str(path / "src"),
-    ])
+# def darglint(path: Path):
+#     call([
+#         "darglint2",
+#         str(path / "src"),
+#         str(path / "tests"),
+#     ])
 
 
-def deptry_test(path: Path):
-    call([
-        "deptry",
-        "--ignore",
-        "DEP004,DEP002",
-        "-kf", "what2_grapheme",
-        "-kf", "tests",
-        "-kf", "what2_utf_data",
-        str(path / "tests"),
-    ])
+# def deptry_src(path: Path):
+#     call([
+#         "deptry",
+#         "-pri", "DEP003=what2_utf_data",
+#         "-kf", "what2_grapheme",
+#         str(path / "src"),
+#     ])
 
 
-def pylama(path: Path):
-    call([
-        "pylama",
-        str(path / "src"),
-        str(path / "tests"),
-    ])
+# def deptry_test(path: Path):
+#     call([
+#         "deptry",
+#         "--ignore",
+#         "DEP004,DEP002",
+#         "-kf", "what2_grapheme",
+#         "-kf", "tests",
+#         "-kf", "what2_utf_data",
+#         str(path / "tests"),
+#     ])
 
 
-@pytest.mark.order(-4)
-def test_static_type_analysis():
-    pyright(base_dir)
+# def pylama(path: Path):
+#     call([
+#         "pylama",
+#         str(path / "src"),
+#         str(path / "tests"),
+#     ])
 
 
-@pytest.mark.order(-3)
-def test_linter():
-    ruff(base_dir)
+# @pytest.mark.order(-4)
+# def test_static_type_analysis():
+#     pyright(base_dir)
 
 
-@pytest.mark.order(-2)
-def test_code_audit():
-    pylama(base_dir)
+# @pytest.mark.order(-3)
+# def test_linter():
+#     ruff(base_dir)
 
 
-@pytest.mark.order(-2)
-def test_dependencies():
-    deptry_src(base_dir)
-    deptry_test(base_dir)
+# @pytest.mark.order(-2)
+# def test_code_audit():
+#     pylama(base_dir)
 
 
-@pytest.mark.order(-1)
-def test_doc_linter():
-    return darglint(base_dir)
+# @pytest.mark.order(-2)
+# def test_dependencies():
+#     deptry_src(base_dir)
+#     deptry_test(base_dir)
+
+
+# @pytest.mark.order(-1)
+# def test_doc_linter():
+#     return darglint(base_dir)

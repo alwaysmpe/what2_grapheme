@@ -1,4 +1,4 @@
-from what2 import dbg
+from what2.debug import dbg
 
 from what2_grapheme.fast_re import api as re_api
 from what2_grapheme.fast_sm import api as fast_api

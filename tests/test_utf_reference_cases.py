@@ -2,7 +2,7 @@ from collections.abc import Callable
 import re
 
 import pandas as pd
-from what2 import dbg
+from what2.debug import dbg
 
 from what2_grapheme.fast_re import api as fast_api
 from what2_grapheme.fast_sm import api as fast_sm_api
@@ -10,6 +10,7 @@ from what2_grapheme.grapheme_property.cache import default_properties
 from what2_grapheme.grapheme_property.parse import parse_utf_delimited
 from what2_grapheme.simple_sm import api as simple_api
 from what2_grapheme.util.caching import cache
+import ugrapheme
 
 from tests.conftest import did_fail
 from tests.data import break_test
@@ -113,6 +114,7 @@ def test_grapheme_length(case_str: str, case_str_sizes: list[int]):
         fast_api.length,
         fast_sm_api.length,
         simple_api.length,
+        ugrapheme.grapheme_len,
     )
     for impl in impls:
         assert impl(case_str) == len(case_str_sizes)
@@ -133,8 +135,10 @@ def test_grapheme_chunks(case_str: str, case_str_chunks: list[int]):
         fast_api.graphemes,
         fast_sm_api.graphemes,
         simple_api.graphemes,
+        ugrapheme.grapheme_split,
     )
     for impl in impls:
+        print(impl)
         assert impl(case_str) == case_str_chunks
 
 

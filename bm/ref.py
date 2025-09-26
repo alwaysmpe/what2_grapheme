@@ -1,4 +1,4 @@
-from what2_grapheme.grapheme_data.load import break_test
+from tests.data import break_test
 from what2_grapheme.grapheme_property.parse import parse_utf_delimited
 import pandas as pd
 import re

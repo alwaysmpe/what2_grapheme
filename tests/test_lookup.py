@@ -1,7 +1,7 @@
 from typing import cast
 
 from grapheme.grapheme_property_group import GraphemePropertyGroup, get_group_ord
-from what2 import dbg
+from what2.debug import dbg
 
 from what2_grapheme.grapheme_property.cache import default_properties
 from what2_grapheme.grapheme_property.type import Break

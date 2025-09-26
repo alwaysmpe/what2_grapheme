@@ -3,7 +3,7 @@ from collections.abc import Callable
 from what2_grapheme.fast_re import api as fast_api
 from what2_grapheme.fast_sm import api as fast_sm_api
 from what2_grapheme.simple_sm import api as simple_api
-
+import ugrapheme
 from tests.data import segmenter_test
 
 import pytest
@@ -67,6 +67,7 @@ def test_grapheme_segmentation(case_str: str, case_chunks: str):
         fast_api.graphemes,
         fast_sm_api.graphemes,
         simple_api.graphemes,
+        ugrapheme.grapheme_split,
     )
 
     for impl in impls:

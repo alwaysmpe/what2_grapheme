@@ -1,10 +1,12 @@
 from rich.console import Console
+
 from what2_time import Timer
-from what2 import dbg
+from what2.debug import dbg
+import regex as re
 # from what2_grapheme import w2
 # from what2_grapheme.grapheme_property.cache import default_properties
 # from what2_grapheme.grapheme_property.type import Break
-
+import ugrapheme
 # props = default_properties()
 
 # dbg(props.ascii_other)
@@ -31,10 +33,10 @@ with Timer("pyuegc import & warmup time", logger=import_logger):
 from bm import cases, rng, runner
 from typing import cast
 from collections.abc import Callable
-from what2 import dbg
+# from what2.debug import dbg
 from typing import Protocol
 
-show_detail: bool = False
+# show_detail: bool = False
 show_detail: bool = True
 show_summary: bool = True
 
@@ -61,6 +63,12 @@ ugrapheme_len = cast(ULenFn, api.length)  # type: ignore reportUnknownMemberType
 
 def uegc_len(data: str) -> int:
     return len(EGC(data))
+re_pat = re.compile('\\X')
+def regex_len(data: str) -> int:
+    return len(re_pat.findall(data))
+def regex_to_grapheme(data: str) -> list[str]:
+    return re_pat.findall(data)
+
 
 # with_others = False
 with_others = True
@@ -137,6 +145,9 @@ else:
         ("pyuegc", uegc_len, rng.seeded_rng()),
         # ("what2_simple", simple_api.length, rng.seeded_rng()),
         ("grapheme", grapheme_len, rng.seeded_rng()),
+        ("ugrapheme", ugrapheme.grapheme_len, rng.seeded_rng()),
+        ("regex", regex_len, rng.seeded_rng()),
+
     ]
     utf_len_specs = (
         ("what2", fast_sm_api.length, rng.seeded_rng()),
@@ -144,6 +155,8 @@ else:
         ("pyuegc", uegc_len, rng.seeded_rng()),
         # ("what2_simple", simple_api.length, rng.seeded_rng()),
         ("grapheme", grapheme_len, rng.seeded_rng()),
+        ("ugrapheme", ugrapheme.grapheme_len, rng.seeded_rng()),
+        ("regex", regex_len, rng.seeded_rng()),
     )
 
     until_len_specs: list[tuple[str, ULenFn, rng.Generator]] = [
@@ -158,6 +171,8 @@ else:
         ("what2_api", fast_api.graphemes, rng.seeded_rng()),
         ("pyuegc", EGC, rng.seeded_rng()),
         ("grapheme", lambda x: list(api.graphemes(x)), rng.seeded_rng()),
+        ("ugrapheme", ugrapheme.grapheme_split, rng.seeded_rng()),
+        ("regex", regex_to_grapheme, rng.seeded_rng()),
     ]
 
     def str_slice(data: str, start: int | None = None, stop: int | None = None) -> str:
@@ -171,6 +186,7 @@ else:
         ("pyuegc", lambda x, start, stop: "".join(EGC(x)[start: stop]), rng.seeded_rng()),
         # ("what2_simple", simple_api.strslice, rng.seeded_rng()),
         ("grapheme", grapheme_slice, rng.seeded_rng()),
+        ("ugrapheme", ugrapheme.grapheme_slice, rng.seeded_rng()),
     )
     neg_grapheme_slice = cast(SliceFn, api.slice)  # type: ignore reportUnknownMemberType
     neg_slice_specs: tuple[tuple[str, SliceFn, rng.Generator], ...] = (
@@ -180,6 +196,7 @@ else:
         ("pyuegc", lambda x, start, stop: "".join(EGC(x)[start: stop]), rng.seeded_rng()),
         # ("what2_simple", simple_api.strslice, rng.seeded_rng()),
         ("grapheme", grapheme_slice, rng.seeded_rng()),
+        ("ugrapheme", ugrapheme.grapheme_slice, rng.seeded_rng()),
     )
 
     grapheme_contains = cast(Callable[[str, str], bool], api.contains)  # type: ignore reportUnknownMemberType
@@ -221,6 +238,33 @@ def warmup():
             with Timer(fn.__name__, logger=import_logger):
                 fn(arg)
                 # dbg(fn(f"{arg}\r\n", skip_crlf=False))
+
+    results = {}
+    for fn_name, fn, _ in to_grapheme_specs:
+        for arg in cases.rand_utf_joined(60, 1000, rng.mk_rng()):
+            # print(fn_name)
+            # print(fn.__name__)
+            ret = fn(arg)
+            if arg in results:
+                assert ret == results[arg]
+            else:
+                results[arg] = ret
+
+    results = {}
+    for fn_name, fn, _ in neg_slice_specs:
+        for arg in cases.rand_utf_joined(60, 1000, rng.mk_rng()):
+            is_w2 = fn_name.startswith("what2")
+            is_ug = fn_name == "ugrapheme"
+            if not (is_w2 or is_ug):
+                continue
+
+            # print(fn_name)
+            # print(fn.__name__)
+            ret = fn(arg, -300, -100)
+            if arg in results:
+                assert ret == results[arg]
+            else:
+                results[arg] = ret
 
 
 def main():
@@ -275,7 +319,7 @@ def bm_to_grapheme():
     gname = "Split ASCII Graphemes"
     short_name = "api.graphemes(ascii)"
     bm.add_group(runner.Group(gname, short_name))
-    for name, fn, fn_rng in len_specs:
+    for name, fn, fn_rng in to_grapheme_specs:
         # dbg(name)
         bm.add_run(gname, name, iterations=iter_count)
         for arg in cases.rand_ascii(case_count, ascii_len, fn_rng):
@@ -289,7 +333,7 @@ def bm_to_grapheme():
     gname = "Split Grouping Graphemes"
     short_name = "api.graphemes(utf_wgroups)"
     bm.add_group(runner.Group(gname, short_name))
-    for name, fn, fn_rng in len_specs:
+    for name, fn, fn_rng in to_grapheme_specs:
         # dbg(name)
         bm.add_run(gname, name, iterations=iter_count)
         for arg in cases.rand_utf_joined(case_count, ascii_len, fn_rng):
@@ -397,7 +441,8 @@ def bm_neg_ascii_slice():
     for name, fn, fn_rng in neg_slice_specs:
         is_w2 = name.startswith("what2")
         is_builtin = "builtin" in name
-        if not (is_w2 or is_builtin):
+        is_ug = name == "ugrapheme"
+        if not (is_w2 or is_builtin or is_ug):
             continue
         bm.add_run(gname, name, iterations=iter_count)
         for arg in cases.rand_ascii(case_count, ascii_len, fn_rng):
@@ -419,7 +464,8 @@ def bm_neg_ascii_slice():
     for name, fn, fn_rng in neg_slice_specs:
         is_w2 = name.startswith("what2")
         is_builtin = "builtin" in name
-        if not (is_w2 or is_builtin):
+        is_ug = name == "ugrapheme"
+        if not (is_w2 or is_builtin or is_ug):
             continue
         bm.add_run(gname, name, iterations=iter_count)
         for arg in cases.rand_ascii(case_count, ascii_len, fn_rng):
@@ -439,7 +485,9 @@ def bm_neg_ascii_slice():
     short_name = "utf_wgroups[100 - len(utf_wgroups): 300 - len(utf_wgroups)]"
     bm.add_group(runner.Group(gname, short_name))
     for name, fn, fn_rng in neg_slice_specs:
-        if not name.startswith("what2"):
+        is_w2 = name.startswith("what2")
+        is_ug = name == "ugrapheme"
+        if not (is_w2 or is_ug):
             continue
         bm.add_run(gname, name, iterations=iter_count)
         for arg in cases.rand_utf_joined(case_count, ascii_len, fn_rng):
@@ -460,7 +508,9 @@ def bm_neg_ascii_slice():
     short_name = f"utf_wgroups[-300: -100]"
     bm.add_group(runner.Group(gname, short_name))
     for name, fn, fn_rng in neg_slice_specs:
-        if not name.startswith("what2"):
+        is_w2 = name.startswith("what2")
+        is_ug = name == "ugrapheme"
+        if not (is_w2 or is_ug):
             continue
 
         # dbg(name)
