@@ -39,7 +39,7 @@ from typing import Protocol
 # show_detail: bool = False
 show_detail: bool = True
 show_summary: bool = True
-
+verify = False
 from what2_grapheme.simple_sm import api as simple_api
 
 
@@ -196,7 +196,7 @@ else:
         ("pyuegc", lambda x, start, stop: "".join(EGC(x)[start: stop]), rng.seeded_rng()),
         # ("what2_simple", simple_api.strslice, rng.seeded_rng()),
         ("grapheme", grapheme_slice, rng.seeded_rng()),
-        ("ugrapheme", ugrapheme.grapheme_slice, rng.seeded_rng()),
+        ("ugrapheme", lambda x, s, e: ugrapheme.graphemes(x).gslice(s, e), rng.seeded_rng()),
     )
 
     grapheme_contains = cast(Callable[[str, str], bool], api.contains)  # type: ignore reportUnknownMemberType
@@ -239,24 +239,57 @@ def warmup():
                 fn(arg)
                 # dbg(fn(f"{arg}\r\n", skip_crlf=False))
 
+    if not verify:
+        return
+
     results = {}
-    for arg in cases.rand_utf_joined(60, 1000, rng.mk_rng()):
+    for idx, arg in enumerate(cases.rand_utf_joined(60, 1000, rng.mk_rng())):
+        if idx == 50:
+            continue
+        # arg = fast_api.strslice(arg, 16, 17)
         for fn_name, fn, _ in to_grapheme_specs:
-            is_w2 = fn_name.startswith("what2")
+            is_w2 = fn_name.startswith("what2_api")
             is_ug = fn_name == "ugrapheme"
             if not (is_w2 or is_ug):
                 continue
-            
+            # print(fn_name)
+
             ret = fn(arg)
             if arg in results:
+                if ret != results[arg]:
+                    print(fn_name)
+                    # print(arg)
+                    print(ret)
+                    print(results[arg])
+                    # print(len(ret))
+                    # print(len(results[arg]))
+
+                    from what2_grapheme.grapheme_property.cache import default_properties
+                    props = default_properties()
+
+                    dbg([props.char_to_enum(char) for char in arg])
+                    dbg([[props.char_to_enum(char) for char in chunk] for chunk in ugrapheme.grapheme_split(arg)])
+                    dbg([[props.char_to_enum(char) for char in chunk] for chunk in fast_api.graphemes(arg)])
+                    dbg(arg.encode("raw_unicode_escape"))
+                    for pos, (lhs, rhs) in enumerate(zip(ret, results[arg])):
+                        if lhs == rhs:
+                            continue
+                        print(pos)
+                        break
+                    print(idx)
+                    # dbg([props.char_to_cat(char) for char in arg])
+                    # for char in arg:
+
                 assert ret == results[arg]
             else:
                 results[arg] = ret
 
     results = {}
-    for arg in cases.rand_utf_joined(60, 1000, rng.mk_rng()):
+    for idx, arg in enumerate(cases.rand_utf_joined(60, 1000, rng.mk_rng())):
+        # if idx == 50:
+        #     continue
         for fn_name, fn, _ in neg_slice_specs:
-            is_w2 = fn_name.startswith("what2")
+            is_w2 = fn_name.startswith("what2_api")
             is_ug = fn_name == "ugrapheme"
             if not (is_w2 or is_ug):
                 continue
@@ -265,6 +298,32 @@ def warmup():
             # print(fn.__name__)
             ret = fn(arg, -300, -100)
             if arg in results:
+                if ret != results[arg]:
+                    print(fn_name)
+                    print(f"{len(ret)=}")
+                    print(f"{len(results[arg])=}")
+                    # print(arg)
+                    # print(ret)
+                    # print(results[arg])
+                    # print(len(ret))
+                    # print(len(results[arg]))
+
+                    from what2_grapheme.grapheme_property.cache import default_properties
+                    props = default_properties()
+
+                    # dbg([props.char_to_enum(char) for char in arg])
+                    # dbg([[props.char_to_enum(char) for char in chunk] for chunk in ugrapheme.grapheme_split(arg)])
+                    # dbg([[props.char_to_enum(char) for char in chunk] for chunk in fast_api.graphemes(arg)])
+                    # dbg(arg.encode("raw_unicode_escape"))
+                    for pos, (lhs, rhs) in enumerate(zip(ret, results[arg])):
+                        if lhs == rhs:
+                            continue
+                        print(pos)
+                        break
+                    print(f"{idx=}")
+                    # dbg([props.char_to_cat(char) for char in arg])
+                    # for char in arg:
+
                 assert ret == results[arg]
             else:
                 results[arg] = ret
