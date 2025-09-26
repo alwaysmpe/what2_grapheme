@@ -240,10 +240,13 @@ def warmup():
                 # dbg(fn(f"{arg}\r\n", skip_crlf=False))
 
     results = {}
-    for fn_name, fn, _ in to_grapheme_specs:
-        for arg in cases.rand_utf_joined(60, 1000, rng.mk_rng()):
-            # print(fn_name)
-            # print(fn.__name__)
+    for arg in cases.rand_utf_joined(60, 1000, rng.mk_rng()):
+        for fn_name, fn, _ in to_grapheme_specs:
+            is_w2 = fn_name.startswith("what2")
+            is_ug = fn_name == "ugrapheme"
+            if not (is_w2 or is_ug):
+                continue
+            
             ret = fn(arg)
             if arg in results:
                 assert ret == results[arg]
@@ -251,8 +254,8 @@ def warmup():
                 results[arg] = ret
 
     results = {}
-    for fn_name, fn, _ in neg_slice_specs:
-        for arg in cases.rand_utf_joined(60, 1000, rng.mk_rng()):
+    for arg in cases.rand_utf_joined(60, 1000, rng.mk_rng()):
+        for fn_name, fn, _ in neg_slice_specs:
             is_w2 = fn_name.startswith("what2")
             is_ug = fn_name == "ugrapheme"
             if not (is_w2 or is_ug):
