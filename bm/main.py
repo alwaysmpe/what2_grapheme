@@ -14,8 +14,8 @@ import ugrapheme
 # crlf = w2.esc_ch_set("\r\n")
 # dbg(crlf.c())
 # assert 0
-import_logger = print
-# import_logger = None
+# import_logger = print
+import_logger = None
 
 
 with Timer("what2 import & warmup time", logger=import_logger):
@@ -30,16 +30,33 @@ with Timer("grapheme import & warmup time", logger=import_logger):
 with Timer("pyuegc import & warmup time", logger=import_logger):
     from pyuegc.egc import EGC
 
+
+# import ctypes.util as cutil
+
+# import ctypes
+
+# py_kind = ctypes.pythonapi["PyUnicode_KIND"]
+# dbg(py_kind("fooo"))
+# exit()
+# import pyuegc.egc as pyegc
+# arg = b'\\u2701\\u200d\\u2701\\u200d\\u231a'.decode("raw_unicode_escape")
+# print(arg)
+# dbg((api.graphemes(arg)))
+# dbg(fast_api.graphemes(arg))
+# # print(pyegc._BREAK_RULES)
+# exit()
+
 from bm import cases, rng, runner
 from typing import cast
 from collections.abc import Callable
 # from what2.debug import dbg
 from typing import Protocol
 
-# show_detail: bool = False
-show_detail: bool = True
+show_detail: bool = False
+# show_detail: bool = True
 show_summary: bool = True
 verify = False
+# verify = True
 from what2_grapheme.simple_sm import api as simple_api
 
 
@@ -56,8 +73,8 @@ console = Console()
 bm = runner.Benchmark()
 
 case_count = 10
-ascii_len = 10000
-iter_count = 10
+ascii_len = 100000
+iter_count = 100
 grapheme_len = cast(LenFn, api.length)  # type: ignore reportUnknownMemberType
 ugrapheme_len = cast(ULenFn, api.length)  # type: ignore reportUnknownMemberType
 
@@ -70,14 +87,16 @@ def regex_to_grapheme(data: str) -> list[str]:
     return re_pat.findall(data)
 
 
-# with_others = False
-with_others = True
+with_others = False
+# with_others = True
 if not with_others:
 
     len_specs: list[tuple[str, LenFn, rng.Generator]] = [
         # ("len builtin", len, rng.seeded_rng()),
         # ("what2", fast_sm_api.length, rng.seeded_rng()),
         ("what2_api", fast_api.length, rng.seeded_rng()),
+        # ("ugrapheme", ugrapheme.grapheme_len, rng.seeded_rng()),
+
         # ("pyuegc", uegc_len, rng.seeded_rng()),
         # ("what2_simple", simple_api.length, rng.seeded_rng()),
         # ("grapheme", grapheme_len, rng.seeded_rng()),
@@ -88,6 +107,7 @@ if not with_others:
         # ("pyuegc", uegc_len, rng.seeded_rng()),
         # ("what2_simple", simple_api.length, rng.seeded_rng()),
         # ("grapheme", grapheme_len, rng.seeded_rng()),
+        # ("ugrapheme", ugrapheme.grapheme_len, rng.seeded_rng()),
     )
 
     until_len_specs: list[tuple[str, ULenFn, rng.Generator]] = [
@@ -117,7 +137,7 @@ if not with_others:
     )
     neg_slice_specs: tuple[tuple[str, SliceFn, rng.Generator], ...] = (
         # ("str slice", str_slice, rng.seeded_rng()),
-        ("what2", fast_sm_api.strslice, rng.seeded_rng()),
+        # ("what2", fast_sm_api.strslice, rng.seeded_rng()),
         ("what2_api", fast_api.strslice, rng.seeded_rng()),
         # ("pyuegc", lambda x, start, stop: "".join(EGC(x)[start: stop]), rng.seeded_rng()),
         # ("what2_simple", simple_api.strslice, rng.seeded_rng()),
@@ -206,6 +226,7 @@ else:
         ("what2_api", fast_api.contains, rng.seeded_rng()),
         # ("what2_simple", simple_api.contains, rng.seeded_rng()),
         ("grapheme", grapheme_contains, rng.seeded_rng()),
+        ("ugrapheme", lambda st, sub: sub in ugrapheme.graphemes(st), rng.seeded_rng()),
     )
 
     is_safe_specs = (
@@ -223,10 +244,11 @@ def warmup():
 
     Reduces impact from python bytecode compilation, etc.
     """
-    # import_logger = print
+    import_logger = print
+    import_logger = None
 
     for fn_name, fn, _ in len_specs:
-        for arg in cases.rand_utf_joined(6, 100, rng.mk_rng()):
+        for arg in cases.rand_utf_joined(6, 100, rng.seeded_rng()):
             # print(fn_name)
             # print(fn.__name__)
             with Timer(fn_name, logger=import_logger):
@@ -234,7 +256,7 @@ def warmup():
 
     # fn uses cached sets not necessarily used by other apis
     for _, fn, _ in is_safe_specs:
-        for arg in cases.rand_utf_joined(3, 100, rng.mk_rng()):
+        for arg in cases.rand_utf_joined(3, 100, rng.seeded_rng()):
             with Timer(fn.__name__, logger=import_logger):
                 fn(arg)
                 # dbg(fn(f"{arg}\r\n", skip_crlf=False))
@@ -242,21 +264,27 @@ def warmup():
     if not verify:
         return
 
+    print("verifying")
     results = {}
-    for idx, arg in enumerate(cases.rand_utf_joined(60, 1000, rng.mk_rng())):
-        if idx == 50:
-            continue
+    for idx, arg in enumerate(cases.rand_utf_joined(6000, 1000, rng.seeded_rng())):
+        # arg = fast_api.strslice(arg, 339, 342)
+        # if idx == 50:
+        #     continue
         # arg = fast_api.strslice(arg, 16, 17)
+        last_name = None
         for fn_name, fn, _ in to_grapheme_specs:
-            is_w2 = fn_name.startswith("what2_api")
-            is_ug = fn_name == "ugrapheme"
-            if not (is_w2 or is_ug):
+            if fn_name == "grapheme":
                 continue
+            # is_w2 = fn_name.startswith("what2")
+            # is_ug = fn_name == "ugrapheme"
+            # if not (is_w2 or is_ug):
+            #     continue
             # print(fn_name)
 
             ret = fn(arg)
             if arg in results:
                 if ret != results[arg]:
+                    print(last_name)
                     print(fn_name)
                     # print(arg)
                     print(ret)
@@ -267,25 +295,28 @@ def warmup():
                     from what2_grapheme.grapheme_property.cache import default_properties
                     props = default_properties()
 
-                    dbg([props.char_to_enum(char) for char in arg])
-                    dbg([[props.char_to_enum(char) for char in chunk] for chunk in ugrapheme.grapheme_split(arg)])
-                    dbg([[props.char_to_enum(char) for char in chunk] for chunk in fast_api.graphemes(arg)])
+                    dbg([props.char_to_enum(char).name for char in arg])
+                    dbg([[props.char_to_enum(char).name for char in chunk] for chunk in ugrapheme.grapheme_split(arg)])
+                    dbg([[props.char_to_enum(char).name for char in chunk] for chunk in fast_api.graphemes(arg)])
+                    dbg([[props.char_to_enum(char).name for char in chunk] for chunk in fast_sm_api.graphemes(arg)])
+                    dbg([[props.char_to_enum(char).name for char in chunk] for chunk in api.graphemes(arg)])
                     dbg(arg.encode("raw_unicode_escape"))
                     for pos, (lhs, rhs) in enumerate(zip(ret, results[arg])):
                         if lhs == rhs:
                             continue
-                        print(pos)
+                        dbg(pos)
                         break
-                    print(idx)
+                    dbg(idx)
                     # dbg([props.char_to_cat(char) for char in arg])
                     # for char in arg:
 
                 assert ret == results[arg]
             else:
                 results[arg] = ret
+            last_name = fn_name
 
     results = {}
-    for idx, arg in enumerate(cases.rand_utf_joined(60, 1000, rng.mk_rng())):
+    for idx, arg in enumerate(cases.rand_utf_joined(60, 1000, rng.seeded_rng())):
         # if idx == 50:
         #     continue
         for fn_name, fn, _ in neg_slice_specs:
@@ -333,25 +364,27 @@ def main():
     print("starting")
     warmup()
     print("warmed up")
+    if verify:
+        return
 
     bm_ascii_len()
     print("done ascii len")
-    bm_to_grapheme()
-    print("done split graphemes")
-    bm_ascii_slice()
-    print("done ascii slice")
-    bm_neg_ascii_slice()
-    print("done neg ascii slice")
-    bm_str_in_str()
-    print("done str in str")
-    bm_contains_graphemes()
-    print("done any graphemes")
     bm_utf_unjoined_len()
     print("done utf len")
     bm_utf_joined_len()
     print("done utf compound len")
-    bm_utf_until_len()
-    print("done utf compound len up to")
+    # bm_to_grapheme()
+    # print("done split graphemes")
+    # bm_ascii_slice()
+    # print("done ascii slice")
+    # bm_neg_ascii_slice()
+    # print("done neg ascii slice")
+    # bm_str_in_str()
+    # print("done str in str")
+    # bm_contains_graphemes()
+    # print("done any graphemes")
+    # bm_utf_until_len()
+    # print("done utf compound len up to")
 
     if show_summary:
         for table in bm.summaries():
