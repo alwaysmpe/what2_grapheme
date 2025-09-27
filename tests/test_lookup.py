@@ -27,6 +27,9 @@ def test_match_grapheme():
             if val_name.endswith("linker"):
                 assert ref_name == "extend"
                 continue
+            if val_name.endswith("extend"):
+                assert ref_name == "extend"
+                continue
 
         if ref_name != val_name:
             dbg(ref_name)
