@@ -10,7 +10,6 @@ dependencies = [
     "pandas>=2.2.3",
     "what2-regex>=0.1.0",
     "regex>=2025.9.18",
-    "ugrapheme>=0.8",
 ]
 requires-python = ">=3.13"
 # includes = ["src/what2"]
@@ -34,7 +33,8 @@ dev = [
     "toml>=0.10.2",
     "rich>=13.9.3",
     "what2>=0.3.3",
-    "graphemeu>=0.7.0",
+    "ugrapheme>=0.8",
+    "graphemeu==0.7.2",
     "what2-time>=0.3.1",
     "pandas-stubs>=2.2.3.241009",
     "pyuegc>=16.0.0",

@@ -229,14 +229,12 @@ class GraphemeBreak:
             # for code in cat_data[code_start: code_end + 1]:
             #     code_desc[break_class].add(code) # noqa: ERA001
 
-            if break_class == "InCB_Extend":
+            if break_class == Break.InCB_Extend.name:
                 code_slice = cat_data[code_start: code_end + 1]
-                assert np.all(np.logical_or(code_slice == Break.Extend.name, code_slice == Break.ZWJ.name))
-                # InCB_Extend doesn't modify behaviour.
-                # According to UTF break tests, non-incb
-                # extend/zwj characters must have same extending effect.
-                # Slightly underspecified by standard.
-                continue
+                if np.any(code_slice == Break.ZWJ.name):
+                    assert code_start == code_end
+                    continue
+                assert np.all(code_slice == Break.Extend.name)
 
             if break_class == Break.InCB_Consonant.name:
                 code_slice = cat_data[code_start: code_end + 1]

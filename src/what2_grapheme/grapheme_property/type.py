@@ -31,3 +31,4 @@ class Break(np.uint8, Enum):
     ZWJ = np.uint8(15)
     """Zero width join"""
     InCB_Linker = np.uint8(16)
+    InCB_Extend = np.uint8(17)

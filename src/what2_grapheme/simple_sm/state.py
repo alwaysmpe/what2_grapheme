@@ -101,7 +101,7 @@ class StateMachine:
         if next_kind == Break.InCB_Linker:
             return False, cls.incb_linked_GB9c, False
 
-        is_extend = next_kind == Break.Extend
+        is_extend = next_kind == Break.InCB_Extend
         is_zwj = next_kind == Break.ZWJ
 
         if is_extend or is_zwj:
@@ -115,17 +115,17 @@ class StateMachine:
             return False, cls.incb_pre_link_GB9c, False
 
         is_incb_link = next_kind == Break.InCB_Linker
-        is_extend = next_kind == Break.Extend
+        is_incb_extend = next_kind == Break.InCB_Extend
         is_zwj = next_kind == Break.ZWJ
 
-        if is_incb_link or is_extend or is_zwj:
+        if is_incb_link or is_incb_extend or is_zwj:
             return False, cls.incb_linked_GB9c, False
 
-        return cls._override_default(next_kind, should_break=True)
+        return cls.default(next_kind)
 
     @classmethod
     def emoji_pre_linked_GB11(cls, next_kind: int) -> StateRet:
-        is_extend = next_kind == Break.Extend
+        is_extend = (next_kind == Break.Extend or next_kind == Break.InCB_Extend or next_kind == Break.InCB_Linker)
         is_zwj = next_kind == Break.ZWJ
         if is_extend:
             return False, cls.emoji_pre_linked_GB11, False
@@ -137,14 +137,8 @@ class StateMachine:
 
     @classmethod
     def emoji_linked_GB11(cls, next_kind: int) -> StateRet:
-        is_extend = next_kind == Break.Extend
-        is_zwj = next_kind == Break.ZWJ
-
-        if is_extend or is_zwj:
-            return False, cls.emoji_linked_GB11, False
-
         if next_kind == Break.Extended_Pictographic:
-            return False, cls.default, True
+            return False, cls.emoji_pre_linked_GB11, False
 
         return cls.default(next_kind)
 

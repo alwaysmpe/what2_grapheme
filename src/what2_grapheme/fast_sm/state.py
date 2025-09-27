@@ -129,7 +129,7 @@ class StateMachine:
         if next_kind == 16:
             return False, cls.incb_linked_GB9c, False
 
-        if next_kind in {13, 15}:
+        if next_kind in {15, 17}:
             return False, cls.incb_pre_link_GB9c, False
 
         return cls.default(next_kind)
@@ -139,14 +139,14 @@ class StateMachine:
         if next_kind == 9:
             return False, cls.incb_pre_link_GB9c, False
 
-        if next_kind in {13, 15, 16}:
+        if next_kind in {15, 16, 17}:
             return False, cls.incb_linked_GB9c, False
 
-        return cls._override_default(next_kind, should_break=True)
+        return cls.default(next_kind)
 
     @classmethod
     def emoji_pre_linked_GB11(cls, next_kind: int) -> StateRet:
-        if next_kind == 13:
+        if next_kind == 13 or next_kind == 16 or next_kind == 17:
             return False, cls.emoji_pre_linked_GB11, False
 
         if next_kind == 15:
@@ -156,11 +156,8 @@ class StateMachine:
 
     @classmethod
     def emoji_linked_GB11(cls, next_kind: int) -> StateRet:
-        if next_kind == 13 or next_kind == 15:
-            return False, cls.emoji_linked_GB11, False
-
         if next_kind == 10:
-            return False, cls.default, True
+            return False, cls.emoji_pre_linked_GB11, False
 
         return cls.default(next_kind)
 

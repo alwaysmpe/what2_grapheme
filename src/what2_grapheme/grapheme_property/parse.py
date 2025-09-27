@@ -51,7 +51,7 @@ def parse_data_file(path: Path, names: list[str]) -> pd.DataFrame:
 
 def mk_break_cat() -> pd.CategoricalDtype:
     return pd.CategoricalDtype(
-        categories=["InCB_Extend", *Break._member_names_],
+        categories=[*Break._member_names_],
         ordered=False,
     )
 

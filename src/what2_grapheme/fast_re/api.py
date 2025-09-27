@@ -127,7 +127,7 @@ def length(data: str, until: int | None = None, properties: GraphemeBreak | None
         return until or len(data)
 
     re_pat = _build_re()
-    return sum(1 for _ in re_pat.finditer(str_ch))
+    return len(re_pat.findall(str_ch))
 
 
 def strslice(data: str, start: int | None = None, stop: int | None = None, properties: GraphemeBreak | None = None) -> str:

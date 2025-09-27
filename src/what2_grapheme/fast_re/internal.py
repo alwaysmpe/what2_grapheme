@@ -23,17 +23,23 @@ Extend = chr(ord(Other) + 1)
 SpacingMark = chr(ord(Extend) + 1)
 ZWJ = chr(ord(SpacingMark) + 1)
 InCB_Linker = chr(ord(ZWJ) + 1)
+InCB_Extend = chr(ord(InCB_Linker) + 1)
 
 
 @cache
-def ord_encode_map(properties: GraphemeBreak) -> dict[int, str]:
+def ord_encode_map(properties: GraphemeBreak) -> tuple[str, ...]:
     """
     Get a mapping from ordinal to break property character.
     """
-    return {
-        i: chr(ord("a") + int(properties.code_to_cat(i)))
-        for i in range(MAX_ORD)
+    # create fewer str objects
+    raw_chars = {
+        i: chr(ord("a") + i)
+        for i in range(18)
     }
+    return tuple(
+        raw_chars[int(properties.code_to_cat(i))]
+        for i in range(MAX_ORD)
+    )
 
 
 def neg_idx_slice(data: str, str_ch: str, start: int | None, stop: int | None) -> str:
@@ -159,14 +165,14 @@ def definite_break_re() -> re.Pattern[str]:
         w2.ng(
             w2.or_seq(
                 w2.seq(Prepend, w2.ch_xset(CR, LF, Control)),
-                w2.seq(w2.ch_xset(CR, LF, Control), w2.ch_set(Extend, SpacingMark, ZWJ, InCB_Linker)),
+                w2.seq(w2.ch_xset(CR, LF, Control), w2.ch_set(Extend, SpacingMark, ZWJ, InCB_Linker, InCB_Extend)),
                 w2.seq(L, w2.ch_set(L, V, LV, LVT)),
                 w2.seq(w2.ch_set(V, LV), w2.ch_set(V, T)),
                 w2.seq(w2.ch_set(T, LVT), T),
                 w2.seq(Regional_Indicator, Regional_Indicator),
-                w2.seq(InCB_Consonant, w2.ch_set(Extend, ZWJ, InCB_Linker)),
-                w2.seq(w2.ch_set(Extend, ZWJ, InCB_Linker), InCB_Consonant),
-                w2.seq(w2.ch_set(Extend, ZWJ), Extended_Pictographic),
+                w2.seq(InCB_Consonant, w2.ch_set(Extend, ZWJ, InCB_Linker, InCB_Extend)),
+                w2.seq(w2.ch_set(ZWJ, InCB_Linker, InCB_Extend), InCB_Consonant),
+                w2.seq(ZWJ, Extended_Pictographic),
                 w2.seq(CR, LF),
                 w2.seq(".", w2.line_end),
             ),
@@ -259,7 +265,7 @@ def build_raw_re() -> w2.or_seq:
     xpicto = w2.seq(
         Extended_Pictographic,
         w2.g(
-            w2.ch(Extend).repeat,
+            w2.ch_set(Extend, InCB_Extend, InCB_Linker).repeat,
             ZWJ,
             Extended_Pictographic,
         ).repeat,
@@ -269,12 +275,12 @@ def build_raw_re() -> w2.or_seq:
         InCB_Consonant,
         w2.g(
             w2.ch_set(
-                Extend,
                 ZWJ,
+                InCB_Extend,
             ).repeat,
             InCB_Linker,
             w2.ch_set(
-                Extend,
+                InCB_Extend,
                 InCB_Linker,
                 ZWJ,
             ).repeat,
@@ -296,6 +302,7 @@ def build_raw_re() -> w2.or_seq:
         ZWJ,
         SpacingMark,
         InCB_Linker,
+        InCB_Extend,
     )
 
     op_egc_re = w2.or_seq(

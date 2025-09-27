@@ -109,6 +109,7 @@ def _is_definite_break_impl(prev_kind: int, next_kind: int) -> bool:
     join_suffixes = {
         13,
         16,
+        17,
         15,
         14,
     }
@@ -153,9 +154,9 @@ def _is_definite_break_impl(prev_kind: int, next_kind: int) -> bool:
         return False
 
     incb_extender = {
-        13,
         15,
         16,
+        17,
     }
 
     if prev_kind == 9 and next_kind in incb_extender:
@@ -164,12 +165,7 @@ def _is_definite_break_impl(prev_kind: int, next_kind: int) -> bool:
     if prev_kind in incb_extender and next_kind == 9:
         return False
 
-    emoji_extender = {
-        13,
-        15,
-    }
-
-    if prev_kind in emoji_extender and next_kind == 10:
+    if prev_kind == 15 and next_kind == 10:
         return False
 
     return True
