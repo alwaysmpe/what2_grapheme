@@ -1,6 +1,20 @@
 # What2 Grapheme
 
-A pure Python implementation of the Unicode algorithm for breaking strings of text (i.e., code point sequences) into extended grapheme clusters ("user-perceived characters") as specified in [Unicode Standard Annex #29](https://unicode.org/reports/tr29/), "Unicode Text Segmentation". API functions include type annotations. This package conforms to version 16.0 of the Unicode standard, released in September 2024, and has been rigorously tested against the official Unicode test file to ensure accuracy. It's also tested by generating random combinations of strings from the test cases and comparing output between multiple different implementations. This has found several bugs in this implementation as well as in other implementations which have been reported to the authors and fixed.
+A pure Python implementation of the Unicode algorithm
+for breaking strings of text (i.e., code point
+sequences) into extended grapheme clusters
+("user-perceived characters") as specified in
+[Unicode Standard Annex #29](https://unicode.org/reports/tr29/), "Unicode Text Segmentation".
+API functions include type annotations. This package
+conforms to version 17.0 of the Unicode standard,
+released in September 2024, and has been rigorously
+tested against the official Unicode test file to
+ensure accuracy. It's also tested by generating
+random combinations of strings from the test cases
+and comparing output between multiple different
+implementations. This has found several bugs in this
+implementation as well as in other implementations
+which have been reported to the authors and fixed.
 
 Note: Package contains grapheme data files 
 as downloaded from [Unicode Data Files](https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/)

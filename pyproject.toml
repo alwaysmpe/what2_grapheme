@@ -1,6 +1,6 @@
 [project]
 name = "what2-grapheme"
-version = "0.4.0"
+version = "0.5.0"
 description = "A pure Python implementation of the Unicode algorithm for breaking strings of text into extended grapheme clusters (\"user-perceived characters\")."
 authors = [
     {name = "Marc Edwards", email = "marc@mlwhat.com"},
@@ -265,12 +265,12 @@ dev = [
     "pytest>=8.3.3",
     "pytest-order>=1.3.0",
     "pytest-gitignore>=1.3",
-    "setuptools>=75.2.0",
+    "setuptools==75.2.0",
     "toml>=0.10.2",
     "rich>=13.9.3",
     "what2>=0.3.3",
     "ugrapheme>=0.8",
-    "graphemeu==0.7.2",
+    "graphemeu>=0.8.0",
     "what2-time>=0.3.1",
     "pandas-stubs>=2.2.3.241009",
     "pyuegc>=16.0.0",

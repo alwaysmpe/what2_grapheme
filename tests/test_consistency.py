@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict as defaultdict
 import re
 
 from grapheme import api as gr_api
@@ -7,6 +7,7 @@ import ugrapheme
 from what2.debug import dbg
 
 from what2_grapheme import api
+from what2_grapheme.grapheme_property.cache import default_properties as default_properties
 
 from tests.data import break_test, segmenter_test
 from tests.data.parse import parse_utf_delimited
@@ -103,46 +104,53 @@ def graphemeu_to_grapheme(data: str) -> list[str]:
 
 
 def test_consistency(reference_idx_a: int) -> None:
+    if reference_idx_a in {
+        841,
+        842,
+        961,
+        962,
+        963,
+
+    }:
+        pytest.xfail("graphemeu multiple emoji modifiers bug")
     for reference_idx_b in range(len(CASE_DATA)):
-        # if (reference_idx_a == 841 and
-        #     reference_idx_b in {962, 963}):
-        #     continue
         gen_case_str = f"{CASE_DATA[reference_idx_a]}{CASE_DATA[reference_idx_b]}"
 
         w2_split = tuple(api.graphemes(data=gen_case_str))
-        # gu_split = tuple(graphemeu_to_grapheme(data=gen_case_str))
-        # if w2_split != gu_split:
-        #     dbg(reference_idx_a)
-        #     dbg(reference_idx_b)
-        #     from what2_grapheme.py_property.cache import default_properties
-        #     props = default_properties()
-        #     dbg(w2_split)
-        #     dbg(gu_split)
-        #     dbg([ch.encode("raw_unicode_escape") for ch in w2_split])
-        #     dbg([[props.char_to_enum(char).name for char in chunk] for chunk in w2_split])
+        gu_split = tuple(graphemeu_to_grapheme(data=gen_case_str))
+        if w2_split != gu_split:
+            dbg(reference_idx_a)
+            dbg(reference_idx_b)
+            props = default_properties()
+            dbg(w2_split)
+            dbg(gu_split)
+            dbg([ch.encode("raw_unicode_escape") for ch in w2_split])
+            dbg([[props.char_to_enum(char).name for char in chunk] for chunk in w2_split])
 
-        # assert w2_split == gu_split
-        ug_split = tuple(ugrapheme_to_grapheme(gen_case_str))
-        re_split = tuple(regex_to_grapheme(gen_case_str))
+        assert w2_split == gu_split
 
-        results = defaultdict[tuple[str, ...], int](int)
+        # # unicode 17 not yet supported for these implementations.
+        # ug_split = tuple(ugrapheme_to_grapheme(gen_case_str))
+        # re_split = tuple(regex_to_grapheme(gen_case_str))
 
-        results[w2_split] += 1
-        results[ug_split] += 1
-        results[re_split] += 1
+        # results = defaultdict[tuple[str, ...], int](int)
 
-        if len(results) == 1:
-            continue
+        # results[w2_split] += 1
+        # results[ug_split] += 1
+        # results[re_split] += 1
 
-        dbg(reference_idx_a)
-        dbg(reference_idx_b)
+        # if len(results) == 1:
+        #     continue
 
-        if len(results) == sum(results.values()):
-            raise Exception("no agreement")
+        # dbg(reference_idx_a)
+        # dbg(reference_idx_b)
 
-        if results[re_split] == 1:
-            raise Exception("regex disagrees")
-        if results[ug_split] == 1:
-            raise Exception("ugrapheme disagrees")
-        if results[w2_split] == 1:
-            raise Exception("what2 disagrees")
+        # if len(results) == sum(results.values()):
+        #     raise Exception("no agreement")
+
+        # if results[re_split] == 1:
+        #     raise Exception("regex disagrees")
+        # if results[ug_split] == 1:
+        #     raise Exception("ugrapheme disagrees")
+        # if results[w2_split] == 1:
+        #     raise Exception("what2 disagrees")
