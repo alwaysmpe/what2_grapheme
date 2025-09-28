@@ -1,7 +1,7 @@
 from string import ascii_lowercase as ascii_lowercase_str
 from bm.rng import mk_rng, Generator
 ascii_lowercase = list(ascii_lowercase_str)
-from what2_grapheme.grapheme_property.cache import default_properties
+from what2_grapheme.py_property.cache import default_properties
 
 def random_utf_string(length: int, rng: Generator | None = None) -> str:
     if rng is None:

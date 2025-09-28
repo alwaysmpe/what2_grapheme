@@ -1,34 +1,31 @@
-from enum import CONTINUOUS, Enum, verify
-
-import numpy as np
+from enum import StrEnum
 
 
-@verify(CONTINUOUS)
-class Break(np.uint8, Enum):
-    CR = np.uint8(0)
+class Break(StrEnum):
+    CR = "a"
     """Carriage return"""
-    LF = np.uint8(1)
+    LF = "b"
     """Line feed"""
-    Control = np.uint8(2)
+    Control = "c"
     """Control character"""
-    L = np.uint8(3)
+    L = "d"
     """Conjoining Jamo - Leading consonant"""
-    V = np.uint8(4)
+    V = "e"
     """Conjoining Jamo - Vowel"""
-    LV = np.uint8(5)
+    LV = "f"
     """Hangul - precomposed jamo Leading consonant/Vowel sequence"""
-    T = np.uint8(6) # type: ignore reportAssignmentIssues
+    T = "g"
     """Conjoining Jamo - Trailing consonant"""
-    LVT = np.uint8(7)
+    LVT = "h"
     """Hangul - precomposed jamo Leading consonant/Vowel/Trailing consonant sequence"""
-    Prepend = np.uint8(8)
-    InCB_Consonant = np.uint8(9)
-    Extended_Pictographic = np.uint8(10)
-    Regional_Indicator = np.uint8(11)
-    Other = np.uint8(12)
-    Extend = np.uint8(13)
-    SpacingMark = np.uint8(14)
-    ZWJ = np.uint8(15)
+    Prepend = "i"
+    InCB_Consonant = "j"
+    Extended_Pictographic = "k"
+    Regional_Indicator = "l"
+    Other = "m"
+    Extend = "n"
+    SpacingMark = "o"
+    ZWJ = "p"
     """Zero width join"""
-    InCB_Linker = np.uint8(16)
-    InCB_Extend = np.uint8(17)
+    InCB_Linker = "q"
+    InCB_Extend = "r"

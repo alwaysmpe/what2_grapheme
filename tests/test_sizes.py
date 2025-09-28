@@ -3,13 +3,9 @@ from itertools import product
 import string
 
 import what2_grapheme.fast_re.api as fast_api
-import what2_grapheme.fast_sm.api as fast_sm_api
-import what2_grapheme.simple_sm.api as simple_api
 
 impls: tuple[Callable[[str], list[int]], ...] = (
     fast_api.grapheme_sizes,
-    fast_sm_api.grapheme_sizes,
-    simple_api.grapheme_sizes,
 )
 
 

@@ -1,6 +1,6 @@
 # What2 Grapheme
 
-A pure Python implementation of the Unicode algorithm for breaking strings of text (i.e., code point sequences) into extended grapheme clusters ("user-perceived characters") as specified in [Unicode Standard Annex #29](https://unicode.org/reports/tr29/), "Unicode Text Segmentation". API functions include type annotations. This package conforms to version 16.0 of the Unicode standard, released in September 2024, and has been rigorously tested against the official Unicode test file to ensure accuracy.
+A pure Python implementation of the Unicode algorithm for breaking strings of text (i.e., code point sequences) into extended grapheme clusters ("user-perceived characters") as specified in [Unicode Standard Annex #29](https://unicode.org/reports/tr29/), "Unicode Text Segmentation". API functions include type annotations. This package conforms to version 16.0 of the Unicode standard, released in September 2024, and has been rigorously tested against the official Unicode test file to ensure accuracy. It's also tested by generating random combinations of strings from the test cases and comparing output between multiple different implementations. This has found several bugs in this implementation as well as in other implementations which have been reported to the authors and fixed.
 
 Note: Package contains grapheme data files 
 as downloaded from [Unicode Data Files](https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/)
@@ -54,21 +54,33 @@ If rules change, code will need changing.
 
 ## Implementation
 
-This package includes 3 different implementations of
-the grapheme break rules. A simple state machine, 
-a fast state machine and a RegEx based
-implementation. The last is the one exposed in
-`api` as it's the fastest but not easily understood.
+This implementation is pure python. It achieves good
+performance by relying on the python `re` module.
+This implementation translates each codepoint
+in a string into a codepoint representing its
+break properties then applies a RegEx consistent
+with the one described in [Unicode Standard Annex #29](https://unicode.org/reports/tr29/).
+This turns out to give very good performance and
+is fairly easy to update based on the regex
+definitions in that page, as long as care is
+taken to handle codepoints with multiple properties
+(eg InCB Extend characters also have the Extend
+property).
 
 ## Performance
 
 The first usage is slow due to raw data being parsed
 and caches being populated, but after that it's
-faster than any alternative I've found (however [ugrapheme](https://github.com/Z4JC/ugrapheme)
-might be faster)
+faster than most alternatives. There is a rough
+benchmark in the repository comparing different
+implementations. One alternate implementation,
+[ugrapheme](https://github.com/Z4JC/ugrapheme)
+consistently gives better performance but requires
+cython.
 
 To run benchmarks, checkout and install dev
 dependencies using `pdm` then run `python -m bm`.
-The benchmark is thrown together. This package
-includes 3 different implementations of the grapheme
-break rules, 2 are included in the benchmark.
+The benchmark is thrown together. However,
+it compares a range of different implementations
+and use cases.
+

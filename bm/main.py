@@ -8,21 +8,44 @@ import regex as re
 # from what2_grapheme.grapheme_property.type import Break
 import ugrapheme
 # props = default_properties()
+import icu
+from icu import UnicodeString
+bi = icu.BreakIterator.createCharacterInstance(icu.Locale.getRoot())
+
+def icu_len(text, break_iterator = bi):
+    bi.setText(text)
+    if not text:
+        return 0
+    count = 1
+    while True:
+        next_boundary = break_iterator.nextBoundary()
+        if next_boundary == -1:
+            return count
+        count += 1
+        # yield text[lastpos:next_boundary]
+        # lastpos = next_boundary
+
+
+def iterate_breaks(text, break_iterator = bi):
+    break_iterator.setText(text)
+    lastpos = 0
+    while True:
+        next_boundary = break_iterator.nextBoundary()
+        if next_boundary == -1: return
+        yield text[lastpos:next_boundary]
+        lastpos = next_boundary
 
 # dbg(props.ascii_other)
 
 # crlf = w2.esc_ch_set("\r\n")
 # dbg(crlf.c())
 # assert 0
-# import_logger = print
-import_logger = None
+import_logger = print
+# import_logger = None
 
-
-with Timer("what2 import & warmup time", logger=import_logger):
-    from what2_grapheme.grapheme_property.cache import warm_up as w2_warm_up
-    from what2_grapheme.fast_sm import api as fast_sm_api
+with Timer("what2 pure import & warmup time", logger=import_logger):
+    from what2_grapheme.py_property.cache import warm_up as w2_warm_up
     from what2_grapheme.fast_re import api as fast_api
-    # from what2_grapheme.egf import exp_api as fast_api
     w2_warm_up()
 
 with Timer("grapheme import & warmup time", logger=import_logger):
@@ -52,13 +75,12 @@ from collections.abc import Callable
 # from what2.debug import dbg
 from typing import Protocol
 
-show_detail: bool = False
-# show_detail: bool = True
-show_summary: bool = True
+# show_detail: bool = False
+show_detail: bool = True
+# show_summary: bool = True
+show_summary: bool = False
 verify = False
 # verify = True
-from what2_grapheme.simple_sm import api as simple_api
-
 
 type LenFn = Callable[[str], int]
 type SliceFn = Callable[[str, int, int], str]
@@ -73,8 +95,8 @@ console = Console()
 bm = runner.Benchmark()
 
 case_count = 10
-ascii_len = 100000
-iter_count = 100
+ascii_len = 10000
+iter_count = 10
 grapheme_len = cast(LenFn, api.length)  # type: ignore reportUnknownMemberType
 ugrapheme_len = cast(ULenFn, api.length)  # type: ignore reportUnknownMemberType
 
@@ -87,8 +109,8 @@ def regex_to_grapheme(data: str) -> list[str]:
     return re_pat.findall(data)
 
 
-with_others = False
-# with_others = True
+# with_others = False
+with_others = True
 if not with_others:
 
     len_specs: list[tuple[str, LenFn, rng.Generator]] = [
@@ -160,38 +182,37 @@ if not with_others:
 else:
     len_specs: list[tuple[str, LenFn, rng.Generator]] = [
         ("str builtin", len, rng.seeded_rng()),
-        ("what2", fast_sm_api.length, rng.seeded_rng()),
         ("what2_api", fast_api.length, rng.seeded_rng()),
         ("pyuegc", uegc_len, rng.seeded_rng()),
         # ("what2_simple", simple_api.length, rng.seeded_rng()),
         ("grapheme", grapheme_len, rng.seeded_rng()),
         ("ugrapheme", ugrapheme.grapheme_len, rng.seeded_rng()),
+        ("pyicu", icu_len, rng.seeded_rng()),
         ("regex", regex_len, rng.seeded_rng()),
 
     ]
     utf_len_specs = (
-        ("what2", fast_sm_api.length, rng.seeded_rng()),
         ("what2_api", fast_api.length, rng.seeded_rng()),
         ("pyuegc", uegc_len, rng.seeded_rng()),
         # ("what2_simple", simple_api.length, rng.seeded_rng()),
+        ("pyicu", icu_len, rng.seeded_rng()),
         ("grapheme", grapheme_len, rng.seeded_rng()),
         ("ugrapheme", ugrapheme.grapheme_len, rng.seeded_rng()),
         ("regex", regex_len, rng.seeded_rng()),
     )
 
     until_len_specs: list[tuple[str, ULenFn, rng.Generator]] = [
-        ("what2", fast_sm_api.length, rng.seeded_rng()),
         ("what2_api", fast_api.length, rng.seeded_rng()),
         # ("what2_simple", simple_api.length, rng.seeded_rng()),
         ("grapheme", ugrapheme_len, rng.seeded_rng()),
     ]
 
     to_grapheme_specs = [
-        ("what2", fast_sm_api.graphemes, rng.seeded_rng()),
         ("what2_api", fast_api.graphemes, rng.seeded_rng()),
         ("pyuegc", EGC, rng.seeded_rng()),
         ("grapheme", lambda x: list(api.graphemes(x)), rng.seeded_rng()),
         ("ugrapheme", ugrapheme.grapheme_split, rng.seeded_rng()),
+        ("pyicu", lambda x: list(iterate_breaks(x)), rng.seeded_rng()),
         ("regex", regex_to_grapheme, rng.seeded_rng()),
     ]
 
@@ -201,7 +222,6 @@ else:
     grapheme_slice = cast(SliceFn, api.slice)  # type: ignore reportUnknownMemberType
     slice_specs: tuple[tuple[str, SliceFn, rng.Generator], ...] = (
         ("str builtin", str_slice, rng.seeded_rng()),
-        ("what2", fast_sm_api.strslice, rng.seeded_rng()),
         ("what2_api", fast_api.strslice, rng.seeded_rng()),
         ("pyuegc", lambda x, start, stop: "".join(EGC(x)[start: stop]), rng.seeded_rng()),
         # ("what2_simple", simple_api.strslice, rng.seeded_rng()),
@@ -211,7 +231,6 @@ else:
     neg_grapheme_slice = cast(SliceFn, api.slice)  # type: ignore reportUnknownMemberType
     neg_slice_specs: tuple[tuple[str, SliceFn, rng.Generator], ...] = (
         ("str builtin", str_slice, rng.seeded_rng()),
-        ("what2", fast_sm_api.strslice, rng.seeded_rng()),
         ("what2_api", fast_api.strslice, rng.seeded_rng()),
         ("pyuegc", lambda x, start, stop: "".join(EGC(x)[start: stop]), rng.seeded_rng()),
         # ("what2_simple", simple_api.strslice, rng.seeded_rng()),
@@ -222,7 +241,6 @@ else:
     grapheme_contains = cast(Callable[[str, str], bool], api.contains)  # type: ignore reportUnknownMemberType
     contains_specs = (
         ("str builtin", str.__contains__, rng.seeded_rng()),
-        ("what2", fast_sm_api.contains, rng.seeded_rng()),
         ("what2_api", fast_api.contains, rng.seeded_rng()),
         # ("what2_simple", simple_api.contains, rng.seeded_rng()),
         ("grapheme", grapheme_contains, rng.seeded_rng()),
@@ -230,7 +248,6 @@ else:
     )
 
     is_safe_specs = (
-        ("what2", fast_sm_api.is_safe, rng.seeded_rng()),
         ("what2_api", fast_api.is_safe, rng.seeded_rng()),
         # ("what2_api_alt", fast_api.alt_is_safe, rng.seeded_rng()),
         # ("what2_api_alt2", fast_api.set_is_safe, rng.seeded_rng()),
@@ -267,7 +284,7 @@ def warmup():
     print("verifying")
     results = {}
     for idx, arg in enumerate(cases.rand_utf_joined(6000, 1000, rng.seeded_rng())):
-        # arg = fast_api.strslice(arg, 339, 342)
+        # arg = fast_api.strslice(arg, 0, 20)
         # if idx == 50:
         #     continue
         # arg = fast_api.strslice(arg, 16, 17)
@@ -277,7 +294,8 @@ def warmup():
                 continue
             # is_w2 = fn_name.startswith("what2")
             # is_ug = fn_name == "ugrapheme"
-            # if not (is_w2 or is_ug):
+            # is_ic = fn_name == "pyicu"
+            # if not (is_w2 or is_ug or is_ic):
             #     continue
             # print(fn_name)
 
@@ -292,7 +310,7 @@ def warmup():
                     # print(len(ret))
                     # print(len(results[arg]))
 
-                    from what2_grapheme.grapheme_property.cache import default_properties
+                    from what2_grapheme.py_property.cache import default_properties
                     props = default_properties()
 
                     dbg([props.char_to_enum(char).name for char in arg])
@@ -373,18 +391,18 @@ def main():
     print("done utf len")
     bm_utf_joined_len()
     print("done utf compound len")
-    # bm_to_grapheme()
-    # print("done split graphemes")
-    # bm_ascii_slice()
-    # print("done ascii slice")
-    # bm_neg_ascii_slice()
-    # print("done neg ascii slice")
-    # bm_str_in_str()
-    # print("done str in str")
-    # bm_contains_graphemes()
-    # print("done any graphemes")
-    # bm_utf_until_len()
-    # print("done utf compound len up to")
+    bm_to_grapheme()
+    print("done split graphemes")
+    bm_ascii_slice()
+    print("done ascii slice")
+    bm_neg_ascii_slice()
+    print("done neg ascii slice")
+    bm_str_in_str()
+    print("done str in str")
+    bm_contains_graphemes()
+    print("done any graphemes")
+    bm_utf_until_len()
+    print("done utf compound len up to")
 
     if show_summary:
         for table in bm.summaries():

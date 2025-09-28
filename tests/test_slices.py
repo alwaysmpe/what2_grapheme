@@ -4,14 +4,11 @@ from itertools import product
 from what2.debug import dbg
 
 from what2_grapheme.fast_re import api as fast_api
-from what2_grapheme.fast_sm import api as fast_sm_api
 
 import pytest
-import ugrapheme
 
 impls: tuple[Callable[[str, int | None, int | None], str], ...] = (
     fast_api.strslice,
-    fast_sm_api.strslice,
 )
 
 
@@ -82,7 +79,7 @@ def test_short_slice(slice_start: int | None, slice_stop: int | None):
         try:
             result = impl(eg_str, start, stop)
             assert result == expected
-        except:
+        except Exception:
             dbg(eg_str)
             dbg(len(eg_str))
             dbg(start)
@@ -96,7 +93,7 @@ def test_short_slice(slice_start: int | None, slice_stop: int | None):
         try:
             result_zwj = impl(eg_zwj_str, start, stop)
             assert result_zwj == expected_zwj
-        except:
+        except Exception:
             dbg(eg_zwj_str)
             dbg(len(eg_zwj_str))
             dbg(start)

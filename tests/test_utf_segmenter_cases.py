@@ -1,9 +1,9 @@
 from collections.abc import Callable
 
-from what2_grapheme.fast_re import api as fast_api
-from what2_grapheme.fast_sm import api as fast_sm_api
-from what2_grapheme.simple_sm import api as simple_api
 import ugrapheme
+
+from what2_grapheme.fast_re import api as fast_api
+
 from tests.data import segmenter_test
 
 import pytest
@@ -65,8 +65,6 @@ def case_chunks(reference_idx: int) -> list[str]:
 def test_grapheme_segmentation(case_str: str, case_chunks: str):
     impls: tuple[Callable[[str], list[str]], ...] = (
         fast_api.graphemes,
-        fast_sm_api.graphemes,
-        simple_api.graphemes,
         ugrapheme.grapheme_split,
     )
 

@@ -32,8 +32,8 @@ from what2_grapheme.fast_re.internal import (
 from what2_grapheme.fast_re.internal import (
     slice_to as _slice_to,
 )
-from what2_grapheme.grapheme_property.cache import GraphemeBreak
 from what2_grapheme.grapheme_property.cache import default_properties as _default_properties
+from what2_grapheme.grapheme_property.lookup import GraphemeBreak
 from what2_grapheme.util.iter import sliding_window as _sliding_window
 
 
@@ -85,7 +85,7 @@ def is_safe(data: str, properties: GraphemeBreak | None = None, *, skip_crlf: bo
             for match in re_pat.finditer(str_ch)
         )
     return all(
-        ((match.end() - match.start()) == 1) or ()
+        ((match.end() - match.start()) == 1) or (match.group() == "\r\n")
         for match in re_pat.finditer(str_ch)
     )
     return all((len(grapheme) == 1 or grapheme == "\r\n") for grapheme in iter_graphemes(data, properties))

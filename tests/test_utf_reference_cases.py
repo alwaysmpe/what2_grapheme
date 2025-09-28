@@ -5,15 +5,12 @@ import pandas as pd
 from what2.debug import dbg
 
 from what2_grapheme.fast_re import api as fast_api
-from what2_grapheme.fast_sm import api as fast_sm_api
 from what2_grapheme.grapheme_property.cache import default_properties
-from what2_grapheme.grapheme_property.parse import parse_utf_delimited
-from what2_grapheme.simple_sm import api as simple_api
 from what2_grapheme.util.caching import cache
-import ugrapheme
 
 from tests.conftest import did_fail
 from tests.data import break_test
+from tests.data.parse import parse_utf_delimited
 
 import pytest
 
@@ -101,8 +98,8 @@ def debug_fail_enum_kind(request: pytest.FixtureRequest, reference_case_spec: st
     dbg(reference_idx)
     dbg(reference_case_spec)
     for char in case_str:
-        dbg(props.char_to_enum(char))
-        dbg(props.char_to_cat(char))
+        dbg(props.char_to_enum(char).name)
+        dbg(props.char_to_enum(char).value)
 
     test_lines = raw_lines()
 
@@ -112,9 +109,7 @@ def debug_fail_enum_kind(request: pytest.FixtureRequest, reference_case_spec: st
 def test_grapheme_length(case_str: str, case_str_sizes: list[int]):
     impls: tuple[Callable[[str], int], ...] = (
         fast_api.length,
-        fast_sm_api.length,
-        simple_api.length,
-        ugrapheme.grapheme_len,
+        # ugrapheme.grapheme_len,
     )
     for impl in impls:
         assert impl(case_str) == len(case_str_sizes)
@@ -123,8 +118,6 @@ def test_grapheme_length(case_str: str, case_str_sizes: list[int]):
 def test_grapheme_sizes(case_str: str, case_str_sizes: list[int]):
     impls: tuple[Callable[[str], list[int]], ...] = (
         fast_api.grapheme_sizes,
-        fast_sm_api.grapheme_sizes,
-        simple_api.grapheme_sizes,
     )
     for impl in impls:
         assert impl(case_str) == case_str_sizes
@@ -133,9 +126,7 @@ def test_grapheme_sizes(case_str: str, case_str_sizes: list[int]):
 def test_grapheme_chunks(case_str: str, case_str_chunks: list[int]):
     impls: tuple[Callable[[str], list[str]], ...] = (
         fast_api.graphemes,
-        fast_sm_api.graphemes,
-        simple_api.graphemes,
-        ugrapheme.grapheme_split,
+        # ugrapheme.grapheme_split,
     )
     for impl in impls:
         print(impl)
@@ -148,6 +139,5 @@ def ref_has_graphemes(case_str_sizes: list[int]) -> bool:
 
 
 def test_is_safe(case_str: str, ref_has_graphemes: bool):
-    assert fast_sm_api.is_safe(case_str) == fast_api.is_safe(case_str)
     has_graphemes = not fast_api.is_safe(case_str, skip_crlf=False)
     assert has_graphemes == ref_has_graphemes

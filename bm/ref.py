@@ -1,5 +1,5 @@
 from tests.data import break_test
-from what2_grapheme.grapheme_property.parse import parse_utf_delimited
+from bm.parse import parse_utf_delimited
 import pandas as pd
 import re
 from bm.rng import mk_rng, Generator

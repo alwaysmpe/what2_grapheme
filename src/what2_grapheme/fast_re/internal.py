@@ -2,28 +2,28 @@ import re
 
 from what2_regex import w2
 
-from what2_grapheme.grapheme_property.cache import GraphemeBreak
-from what2_grapheme.grapheme_property.lookup import MAX_ORD
+from what2_grapheme.grapheme_property.lookup import GraphemeBreak
+from what2_grapheme.grapheme_property.type import Break
 from what2_grapheme.util.caching import cache, lru_cache
 
-CR = "a"
-LF = chr(ord(CR) + 1)
-Control = chr(ord(LF) + 1)
-L = chr(ord(Control) + 1)
-V = chr(ord(L) + 1)
-LV = chr(ord(V) + 1)
-T = chr(ord(LV) + 1)
-LVT = chr(ord(T) + 1)
-Prepend = chr(ord(LVT) + 1)
-InCB_Consonant = chr(ord(Prepend) + 1)
-Extended_Pictographic = chr(ord(InCB_Consonant) + 1)
-Regional_Indicator = chr(ord(Extended_Pictographic) + 1)
-Other = chr(ord(Regional_Indicator) + 1)
-Extend = chr(ord(Other) + 1)
-SpacingMark = chr(ord(Extend) + 1)
-ZWJ = chr(ord(SpacingMark) + 1)
-InCB_Linker = chr(ord(ZWJ) + 1)
-InCB_Extend = chr(ord(InCB_Linker) + 1)
+CR = Break.CR.value
+LF = Break.LF.value
+Control = Break.Control.value
+L = Break.L.value
+V = Break.V.value
+LV = Break.LV.value
+T = Break.T.value
+LVT = Break.LVT.value
+Prepend = Break.Prepend.value
+InCB_Consonant = Break.InCB_Consonant.value
+Extended_Pictographic = Break.Extended_Pictographic.value
+Regional_Indicator = Break.Regional_Indicator.value
+Other = Break.Other.value
+Extend = Break.Extend.value
+SpacingMark = Break.SpacingMark.value
+ZWJ = Break.ZWJ.value
+InCB_Linker = Break.InCB_Linker.value
+InCB_Extend = Break.InCB_Extend.value
 
 
 @cache
@@ -31,15 +31,7 @@ def ord_encode_map(properties: GraphemeBreak) -> tuple[str, ...]:
     """
     Get a mapping from ordinal to break property character.
     """
-    # create fewer str objects
-    raw_chars = {
-        i: chr(ord("a") + i)
-        for i in range(18)
-    }
-    return tuple(
-        raw_chars[int(properties.code_to_cat(i))]
-        for i in range(MAX_ORD)
-    )
+    return properties.data
 
 
 def neg_idx_slice(data: str, str_ch: str, start: int | None, stop: int | None) -> str:
@@ -130,10 +122,7 @@ def fast_safe_re(properties: GraphemeBreak) -> re.Pattern[str]:
     """
     codes = properties.never_join_codes
     ch_set = w2.ch_set(
-        *(
-            chr(ord(CR) + int(chcode))
-            for chcode in codes
-        ),
+        *codes,
     ).repeat
     return ch_set.c()
 
