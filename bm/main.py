@@ -28,6 +28,7 @@ def icu_len(text, break_iterator = bi):
 
 def iterate_breaks(text, break_iterator = bi):
     break_iterator.setText(text)
+    text = icu.UnicodeString(text)
     lastpos = 0
     while True:
         next_boundary = break_iterator.nextBoundary()
