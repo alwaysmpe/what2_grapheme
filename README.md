@@ -7,7 +7,7 @@ sequences) into extended grapheme clusters
 [Unicode Standard Annex #29](https://unicode.org/reports/tr29/), "Unicode Text Segmentation".
 API functions include type annotations. This package
 conforms to version 17.0 of the Unicode standard,
-released in September 2024, and has been rigorously
+released in August 2025, and has been rigorously
 tested against the official Unicode test file to
 ensure accuracy. It's also tested by generating
 random combinations of strings from the test cases
