@@ -1,6 +1,6 @@
 [project]
 name = "what2-grapheme"
-version = "0.5.1"
+version = "0.5.2"
 description = "A pure Python implementation of the Unicode algorithm for breaking strings of text into extended grapheme clusters (\"user-perceived characters\")."
 authors = [
     {name = "Marc Edwards", email = "marc@mlwhat.com"},

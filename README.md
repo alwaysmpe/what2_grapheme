@@ -88,13 +88,13 @@ and caches being populated, but after that it's
 faster than most alternatives. There is a rough
 benchmark in the repository comparing different
 implementations. One alternate implementation,
-[ugrapheme](https://github.com/Z4JC/ugrapheme)
+[ugrapheme](https://pypi.org/project/ugrapheme/)
 consistently gives better performance but requires
-cython.
+cython and (at time of writing) has not been updated
+for unicode 17.
 
 To run benchmarks, checkout and install dev
 dependencies using `pdm` then run `python -m bm`.
 The benchmark is thrown together. However,
 it compares a range of different implementations
 and use cases.
-
