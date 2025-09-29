@@ -104,15 +104,6 @@ def graphemeu_to_grapheme(data: str) -> list[str]:
 
 
 def test_consistency(reference_idx_a: int) -> None:
-    if reference_idx_a in {
-        841,
-        842,
-        961,
-        962,
-        963,
-
-    }:
-        pytest.xfail("graphemeu multiple emoji modifiers bug")
     for reference_idx_b in range(len(CASE_DATA)):
         gen_case_str = f"{CASE_DATA[reference_idx_a]}{CASE_DATA[reference_idx_b]}"
 
